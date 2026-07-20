@@ -56,3 +56,7 @@ base2.go
 # Go workspace file
 go.work
 go.work.sum
+
+.aider*
+logs/
+vendor/
