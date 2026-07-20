@@ -1,28 +1,9 @@
-/*
- * Copyright 2024 CloudWeGo Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package ttstream
 
 import (
 	"context"
-	"fmt"
 
-	"github.com/bytedance/gopkg/lang/mcache"
 	"github.com/cloudwego/gopkg/protocol/thrift"
-	"github.com/cloudwego/gopkg/protocol/ttheader"
 
 	"github.com/cloudwego/kitex/pkg/remote/trans/ttstream/internal/container"
 
@@ -39,25 +20,16 @@ var (
 
 var defaultRstException = thrift.NewApplicationException(13, "rst")
 
-// newBasicStream is a common function creating stream basic fields,
-// pls use newClientStream or newServerStream to create the real stream exposing to users
 func newBasicStream(ctx context.Context, writer streamWriter, smeta streamFrame) *stream {
-	s := new(stream)
-	s.ctx = ctx
-	s.rpcInfo = rpcinfo.GetRPCInfo(ctx)
-	s.streamFrame = smeta
-	s.writer = writer
-	s.wheader = make(streaming.Header)
-	s.wtrailer = make(streaming.Trailer)
-	return s
+	_ = "STUB: not implemented"
+	return nil
 }
 
-// streamFrame define a basic stream frame
 type streamFrame struct {
 	sid     int32
 	method  string
 	meta    IntHeader
-	header  streaming.Header // key:value, key is full name
+	header  streaming.Header
 	trailer streaming.Trailer
 }
 
@@ -69,180 +41,66 @@ const (
 )
 
 const (
-	streamStateActive          int32 = 0 // when stream is created, init state is active
+	streamStateActive          int32 = 0
 	streamStateHalfCloseLocal  int32 = 1
 	streamStateHalfCloseRemote int32 = 2
 	streamStateInactive        int32 = 3
 )
 
-// stream is used to process frames and expose user APIs
 type stream struct {
 	streamFrame
 	ctx      context.Context
 	rpcInfo  rpcinfo.RPCInfo
 	reader   *streamReader
 	writer   streamWriter
-	wheader  streaming.Header  // wheader == nil means it already be sent
-	wtrailer streaming.Trailer // wtrailer == nil means it already be sent
+	wheader  streaming.Header
+	wtrailer streaming.Trailer
 
 	recvTimeoutConfig   streaming.TimeoutConfig
 	recvTimeoutCallback container.CtxDoneCallback
 	closeCallback       []func(error)
 }
 
-func (s *stream) Service() string {
-	if len(s.header) == 0 {
-		return ""
-	}
-	return s.header[ttheader.HeaderIDLServiceName]
-}
+func (s *stream) Service() string { _ = "STUB: not implemented"; return "" }
 
-func (s *stream) fromService() string {
-	if s.rpcInfo != nil && s.rpcInfo.From() != nil {
-		return s.rpcInfo.From().ServiceName()
-	}
-	return ""
-}
+func (s *stream) fromService() string { _ = "STUB: not implemented"; return "" }
 
-func (s *stream) Method() string {
-	return s.method
-}
+func (s *stream) Method() string { _ = "STUB: not implemented"; return "" }
 
 func (s *stream) TransportProtocol() ktransport.Protocol {
-	return ktransport.TTHeaderStreaming
+	_ = "STUB: not implemented"
+	return *new(ktransport.Protocol)
 }
 
-// SendMsg send a message to peer.
-// In order to avoid underlying execution errors when the context passed in by the user does not
-// contain information related to this RPC, the context specified when creating the stream is used
-// here, and the context passed in by the user is ignored.
 func (s *stream) SendMsg(ctx context.Context, msg any) (err error) {
-	// encode payload
-	payload, err := EncodePayload(s.ctx, msg)
-	if err != nil {
-		return err
-	}
-	// tracing send size
-	ri := s.rpcInfo
-	if ri != nil && ri.Stats() != nil {
-		if rpcStats := rpcinfo.AsMutableRPCStats(ri.Stats()); rpcStats != nil {
-			rpcStats.IncrSendSize(uint64(len(payload)))
-		}
-	}
-	// send data frame
-	return s.writeFrame(dataFrameType, nil, nil, payload)
+	_ = "STUB: not implemented"
+	return nil
 }
 
 func (s *stream) RecvMsg(ctx context.Context, data any) error {
-	var payload []byte
-	var err error
-	if s.recvTimeoutConfig.Timeout > 0 {
-		var tCtx context.Context
-		var cancel context.CancelFunc
-		// Use context.Background() so it is clear whether the Done() triggered from RecvTimeout or StreamTimeout.
-		tCtx, cancel = context.WithTimeout(context.Background(), s.recvTimeoutConfig.Timeout)
-		defer cancel()
-		payload, err = s.reader.outputWithCtx(tCtx, s.recvTimeoutCallback)
-	} else {
-		payload, err = s.reader.output()
-	}
-	if err != nil {
-		return err
-	}
-	err = DecodePayload(s.ctx, payload, data)
-	recvSize := len(payload)
-	// payload will not be access after decode
-	mcache.Free(payload)
-
-	// tracing recv size
-	ri := s.rpcInfo
-	if ri != nil && ri.Stats() != nil {
-		if rpcStats := rpcinfo.AsMutableRPCStats(ri.Stats()); rpcStats != nil {
-			rpcStats.IncrRecvSize(uint64(recvSize))
-		}
-	}
-	return err
-}
-
-func (s *stream) RegisterCloseCallback(cb func(error)) {
-	s.closeCallback = append(s.closeCallback, cb)
-}
-
-func (s *stream) setRecvTimeoutConfig(cfg rpcinfo.RPCConfig, cb container.CtxDoneCallback) {
-	// set timeout callback
-	s.recvTimeoutCallback = cb
-	tmCfg := cfg.StreamRecvTimeoutConfig()
-	// WithStreamRecvTimeoutConfig has higher priority
-	if tmCfg.Timeout > 0 {
-		s.recvTimeoutConfig = tmCfg
-		return
-	}
-	// compatible for WithStreamRecvTimeout(tm), it's equivalent to
-	// streaming.TimeoutConfig{
-	//   Timeout: tm,
-	//   DisableCancelRemote: false,
-	// }
-	tm := cfg.StreamRecvTimeout()
-	if tm > 0 {
-		s.recvTimeoutConfig = streaming.TimeoutConfig{
-			Timeout: tm,
-		}
-	}
-}
-
-func (s *stream) runCloseCallback(exception error) {
-	if len(s.closeCallback) > 0 {
-		for _, cb := range s.closeCallback {
-			cb(exception)
-		}
-	}
-	_ = s.writer.CloseStream(s.sid)
-}
-
-func (s *stream) writeFrame(ftype int32, header streaming.Header, trailer streaming.Trailer, payload []byte) (err error) {
-	fr := newFrame(streamFrame{sid: s.sid, method: s.method, header: header, trailer: trailer}, ftype, payload)
-	return s.writer.WriteFrame(fr)
-}
-
-// writeTrailer send trailer to peer
-// if exception is not nil, trailer frame should carry a payload
-func (s *stream) sendTrailer(exception error) (err error) {
-	wtrailer := s.wtrailer
-	s.wtrailer = nil
-	if wtrailer == nil {
-		return fmt.Errorf("stream trailer already sent")
-	}
-
-	var payload []byte
-	if exception != nil {
-		payload, err = EncodeException(context.Background(), s.method, s.sid, exception)
-		if err != nil {
-			return err
-		}
-	}
-	err = s.writeFrame(trailerFrameType, nil, wtrailer, payload)
-	return err
-}
-
-func (s *stream) sendRst(exception error, cancelPath string) (err error) {
-	var payload []byte
-	if exception != nil {
-		payload, err = EncodeException(context.Background(), s.method, s.sid, exception)
-		if err != nil {
-			return err
-		}
-	}
-	var header streaming.Header
-	if cancelPath != "" {
-		header = make(streaming.Header)
-		header[ttheader.HeaderTTStreamCancelPath] = cancelPath
-	}
-	return s.writeFrame(rstFrameType, header, nil, payload)
-}
-
-// === Frame OnRead callback
-
-func (s *stream) onReadDataFrame(fr *Frame) (err error) {
-	s.reader.input(fr.payload)
+	_ = "STUB: not implemented"
 	return nil
 }
+
+func (s *stream) RegisterCloseCallback(cb func(error)) { _ = "STUB: not implemented"; return }
+
+func (s *stream) setRecvTimeoutConfig(cfg rpcinfo.RPCConfig, cb container.CtxDoneCallback) {
+	_ = "STUB: not implemented"
+	return
+}
+
+func (s *stream) runCloseCallback(exception error) { _ = "STUB: not implemented"; return }
+
+func (s *stream) writeFrame(ftype int32, header streaming.Header, trailer streaming.Trailer, payload []byte) (err error) {
+	_ = "STUB: not implemented"
+	return nil
+}
+
+func (s *stream) sendTrailer(exception error) (err error) { _ = "STUB: not implemented"; return nil }
+
+func (s *stream) sendRst(exception error, cancelPath string) (err error) {
+	_ = "STUB: not implemented"
+	return nil
+}
+
+func (s *stream) onReadDataFrame(fr *Frame) (err error) { _ = "STUB: not implemented"; return nil }

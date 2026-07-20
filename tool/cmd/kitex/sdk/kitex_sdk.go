@@ -1,35 +1,13 @@
-// Copyright 2024 CloudWeGo Authors
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//   http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 package sdk
 
 import (
-	"bytes"
 	"errors"
 	"flag"
-	"fmt"
 	"os/exec"
-	"strings"
-
-	"github.com/cloudwego/kitex/tool/internal_pkg/log"
 
 	"github.com/cloudwego/thriftgo/plugin"
-	"github.com/cloudwego/thriftgo/sdk"
 
-	"github.com/cloudwego/kitex"
 	kargs "github.com/cloudwego/kitex/tool/cmd/kitex/args"
-	"github.com/cloudwego/kitex/tool/internal_pkg/pluginmode/thriftgo"
 )
 
 var args kargs.Arguments
@@ -54,59 +32,18 @@ func init() {
 }
 
 func RunKitexTool(wd string, plugins []plugin.SDKPlugin, kitexArgs ...string) error {
-	kitexPlugin, err := GetKiteXSDKPlugin(wd, kitexArgs)
-	if err != nil {
-		if errors.Is(err, flag.ErrHelp) || errors.Is(err, errExitZero) {
-			return nil
-		}
-		return err
-	}
-	s := []plugin.SDKPlugin{kitexPlugin}
-	s = append(s, plugins...)
-
-	return sdk.RunThriftgoAsSDK(wd, s, kitexPlugin.GetThriftgoParameters()...)
+	_ = "STUB: not implemented"
+	return nil
 }
 
 func GetKiteXSDKPlugin(pwd string, rawKiteXArgs []string) (*KiteXSDKPlugin, error) {
-	// run as kitex
-	err := args.ParseArgs(kitex.Version, pwd, rawKiteXArgs)
-	if err != nil {
-		return nil, err
-	}
-
-	out := new(bytes.Buffer)
-	cmd, err := args.BuildCmd(out)
-	if err != nil {
-		return nil, err
-	}
-
-	kitexPlugin := &KiteXSDKPlugin{}
-
-	kitexPlugin.ThriftgoParams, kitexPlugin.KitexParams, err = ParseKitexCmd(cmd)
-	if err != nil {
-		return nil, err
-	}
-	kitexPlugin.Pwd = pwd
-
-	return kitexPlugin, nil
+	_ = "STUB: not implemented"
+	return nil, nil
 }
 
-// InvokeThriftgoBySDK is for kitex tool main.go
 func InvokeThriftgoBySDK(pwd string, cmd *exec.Cmd) (err error) {
-	kitexPlugin := &KiteXSDKPlugin{}
-
-	kitexPlugin.ThriftgoParams, kitexPlugin.KitexParams, err = ParseKitexCmd(cmd)
-	if err != nil {
-		return err
-	}
-
-	kitexPlugin.Pwd = pwd
-
-	l := log.DefaultLogger()      // pluginmode/thriftgo/convertor.go will change the logger
-	defer log.SetDefaultLogger(l) // revert it back
-	return sdk.RunThriftgoAsSDK(pwd,
-		[]plugin.SDKPlugin{kitexPlugin},
-		kitexPlugin.GetThriftgoParameters()...)
+	_ = "STUB: not implemented"
+	return nil
 }
 
 type KiteXSDKPlugin struct {
@@ -116,43 +53,17 @@ type KiteXSDKPlugin struct {
 }
 
 func (k *KiteXSDKPlugin) Invoke(req *plugin.Request) (res *plugin.Response) {
-	return thriftgo.HandleRequest(req)
+	_ = "STUB: not implemented"
+	return nil
 }
 
-func (k *KiteXSDKPlugin) GetName() string {
-	return "kitex"
-}
+func (k *KiteXSDKPlugin) GetName() string { _ = "STUB: not implemented"; return "" }
 
-func (k *KiteXSDKPlugin) GetPluginParameters() []string {
-	return k.KitexParams
-}
+func (k *KiteXSDKPlugin) GetPluginParameters() []string { _ = "STUB: not implemented"; return nil }
 
-func (k *KiteXSDKPlugin) GetThriftgoParameters() []string {
-	return k.ThriftgoParams
-}
+func (k *KiteXSDKPlugin) GetThriftgoParameters() []string { _ = "STUB: not implemented"; return nil }
 
 func ParseKitexCmd(cmd *exec.Cmd) (thriftgoParams, kitexParams []string, err error) {
-	cmdArgs := cmd.Args
-	// thriftgo -r -o kitex_gen -g go:xxx -p kitex=xxxx -p otherplugin xxx.thrift
-	// ignore first argument, and remove -p kitex=xxxx
-
-	thriftgoParams = []string{}
-	kitexParams = []string{}
-	if len(cmdArgs) < 1 {
-		return nil, nil, fmt.Errorf("cmd args too short: %s", cmdArgs)
-	}
-
-	for i := 1; i < len(cmdArgs); i++ {
-		arg := cmdArgs[i]
-		if arg == "-p" && i+1 < len(cmdArgs) {
-			pluginArgs := cmdArgs[i+1]
-			if strings.HasPrefix(pluginArgs, "kitex") {
-				kitexParams = strings.Split(pluginArgs, ",")
-				i++
-				continue
-			}
-		}
-		thriftgoParams = append(thriftgoParams, arg)
-	}
-	return thriftgoParams, kitexParams, nil
+	_ = "STUB: not implemented"
+	return nil, nil, nil
 }

@@ -1,19 +1,3 @@
-/*
- * Copyright 2021 CloudWeGo Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package rpcinfo
 
 import (
@@ -24,9 +8,6 @@ import (
 	"github.com/cloudwego/kitex/pkg/serviceinfo"
 )
 
-// InvocationServiceInfoKey is the extra key of invocation which stores the ServiceInfo of the rpc call.
-// The reason for adding the extra key is to shield ServiceInfo from users in the Invocation interface definition,
-// as it is a pointer type and may be modified insecurely if obtained by users.
 const InvocationServiceInfoKey = "service_info_key"
 
 var (
@@ -40,7 +21,6 @@ func init() {
 	invocationPool.New = newInvocation
 }
 
-// InvocationSetter is used to set information about an RPC.
 type InvocationSetter interface {
 	SetPackageName(name string)
 	SetServiceName(name string)
@@ -59,160 +39,76 @@ type invocation struct {
 	methodName    string
 	streamingMode serviceinfo.StreamingMode
 	seqID         int32
-	// bizErr and extra should be protected by lock or atomic operation, because they might be read by the client calling goroutine,
-	// but at the same time, written by the real rpc goroutine which is started by timeout middleware.
+
 	bizErr atomic.Pointer[kerrors.BizStatusErrorIface]
 
 	mu    sync.Mutex
 	extra map[string]any
 }
 
-// NewInvocation creates a new Invocation with the given service, method and optional package.
 func NewInvocation(service, method string, pkgOpt ...string) *invocation {
-	ivk := invocationPool.Get().(*invocation)
-	ivk.seqID = genSeqID()
-	ivk.serviceName = service
-	ivk.methodName = method
-	if len(pkgOpt) > 0 {
-		ivk.packageName = pkgOpt[0]
-	}
-	return ivk
-}
-
-// NewServerInvocation to get Invocation for new request in server side
-func NewServerInvocation() Invocation {
-	ivk := invocationPool.Get().(*invocation)
-	return ivk
-}
-
-func genSeqID() int32 {
-	id := atomic.AddInt32(&globalSeqID, 1)
-	if id == 0 {
-		// seqID is non-0 to avoid potential default value judgments leading to error handling
-		id = atomic.AddInt32(&globalSeqID, 1)
-	}
-	return id
-}
-
-func newInvocation() interface{} {
-	return &invocation{}
-}
-
-// SeqID implements the Invocation interface.
-func (i *invocation) SeqID() int32 {
-	return i.seqID
-}
-
-// SetSeqID implements the InvocationSetter interface.
-func (i *invocation) SetSeqID(seqID int32) {
-	i.seqID = seqID
-}
-
-func (i *invocation) PackageName() string {
-	return i.packageName
-}
-
-func (i *invocation) SetPackageName(name string) {
-	i.packageName = name
-}
-
-func (i *invocation) ServiceName() string {
-	return i.serviceName
-}
-
-// SetServiceName implements the InvocationSetter interface.
-func (i *invocation) SetServiceName(name string) {
-	i.serviceName = name
-}
-
-// MethodName implements the Invocation interface.
-func (i *invocation) MethodName() string {
-	return i.methodName
-}
-
-// SetMethodName implements the InvocationSetter interface.
-func (i *invocation) SetMethodName(name string) {
-	i.methodName = name
-}
-
-// MethodInfo implements the Invocation interface.
-func (i *invocation) MethodInfo() serviceinfo.MethodInfo {
-	return i.methodInfo
-}
-
-// SetMethodInfo implements the InvocationSetter interface.
-func (i *invocation) SetMethodInfo(methodInfo serviceinfo.MethodInfo) {
-	i.methodInfo = methodInfo
-}
-
-// StreamingMode implements the Invocation interface.
-func (i *invocation) StreamingMode() serviceinfo.StreamingMode {
-	return i.streamingMode
-}
-
-// SetStreamingMode implements the InvocationSetter interface.
-func (i *invocation) SetStreamingMode(mode serviceinfo.StreamingMode) {
-	i.streamingMode = mode
-}
-
-// BizStatusErr implements the Invocation interface.
-func (i *invocation) BizStatusErr() kerrors.BizStatusErrorIface {
-	if p := i.bizErr.Load(); p != nil {
-		return *p
-	}
+	_ = "STUB: not implemented"
 	return nil
 }
 
-// SetBizStatusErr implements the InvocationSetter interface.
+func NewServerInvocation() Invocation { _ = "STUB: not implemented"; return *new(Invocation) }
+
+func genSeqID() int32 { _ = "STUB: not implemented"; return 0 }
+
+func newInvocation() interface{} { _ = "STUB: not implemented"; return nil }
+
+func (i *invocation) SeqID() int32 { _ = "STUB: not implemented"; return 0 }
+
+func (i *invocation) SetSeqID(seqID int32) { _ = "STUB: not implemented"; return }
+
+func (i *invocation) PackageName() string { _ = "STUB: not implemented"; return "" }
+
+func (i *invocation) SetPackageName(name string) { _ = "STUB: not implemented"; return }
+
+func (i *invocation) ServiceName() string { _ = "STUB: not implemented"; return "" }
+
+func (i *invocation) SetServiceName(name string) { _ = "STUB: not implemented"; return }
+
+func (i *invocation) MethodName() string { _ = "STUB: not implemented"; return "" }
+
+func (i *invocation) SetMethodName(name string) { _ = "STUB: not implemented"; return }
+
+func (i *invocation) MethodInfo() serviceinfo.MethodInfo {
+	_ = "STUB: not implemented"
+	return *new(serviceinfo.MethodInfo)
+}
+
+func (i *invocation) SetMethodInfo(methodInfo serviceinfo.MethodInfo) {
+	_ = "STUB: not implemented"
+	return
+}
+
+func (i *invocation) StreamingMode() serviceinfo.StreamingMode {
+	_ = "STUB: not implemented"
+	return *new(serviceinfo.StreamingMode)
+}
+
+func (i *invocation) SetStreamingMode(mode serviceinfo.StreamingMode) {
+	_ = "STUB: not implemented"
+	return
+}
+
+func (i *invocation) BizStatusErr() kerrors.BizStatusErrorIface {
+	_ = "STUB: not implemented"
+	return *new(kerrors.BizStatusErrorIface)
+}
+
 func (i *invocation) SetBizStatusErr(err kerrors.BizStatusErrorIface) {
-	if err == nil {
-		i.bizErr.Store(nil)
-		return
-	}
-	i.bizErr.Store(&err)
+	_ = "STUB: not implemented"
+	return
 }
 
-func (i *invocation) SetExtra(key string, value interface{}) {
-	i.mu.Lock()
-	defer i.mu.Unlock()
-	if i.extra == nil {
-		i.extra = map[string]interface{}{}
-	}
-	i.extra[key] = value
-}
+func (i *invocation) SetExtra(key string, value interface{}) { _ = "STUB: not implemented"; return }
 
-func (i *invocation) Extra(key string) interface{} {
-	i.mu.Lock()
-	defer i.mu.Unlock()
-	if i.extra == nil {
-		return nil
-	}
-	return i.extra[key]
-}
+func (i *invocation) Extra(key string) interface{} { _ = "STUB: not implemented"; return nil }
 
-// Reset implements the InvocationSetter interface.
-func (i *invocation) Reset() {
-	i.zero()
-}
+func (i *invocation) Reset() { _ = "STUB: not implemented"; return }
 
-// Recycle reuses the invocation.
-func (i *invocation) Recycle() {
-	i.zero()
-	invocationPool.Put(i)
-}
+func (i *invocation) Recycle() { _ = "STUB: not implemented"; return }
 
-func (i *invocation) zero() {
-	i.seqID = 0
-	i.packageName = ""
-	i.serviceName = ""
-	i.methodName = ""
-	i.methodInfo = nil
-	if i.bizErr.Load() != nil {
-		i.bizErr.Store(nil)
-	}
-	i.mu.Lock()
-	for key := range i.extra {
-		delete(i.extra, key)
-	}
-	i.mu.Unlock()
-}
+func (i *invocation) zero() { _ = "STUB: not implemented"; return }

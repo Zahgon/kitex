@@ -1,17 +1,3 @@
-// Copyright 2021 CloudWeGo Authors
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//   http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 package main
 
 import (
@@ -68,7 +54,7 @@ func init() {
 func main() {
 	mode := os.Getenv(kargs.EnvPluginMode)
 	if len(os.Args) <= 1 && mode != "" {
-		// run as a plugin
+
 		switch mode {
 		case thriftgo.PluginName:
 			os.Exit(thriftgo.Run())
@@ -83,7 +69,7 @@ func main() {
 		log.Errorf("Get current path failed: %s", err)
 		os.Exit(1)
 	}
-	// run as kitex
+
 	err = args.ParseArgs(kitex.Version, curpath, os.Args[1:])
 	if err != nil {
 		if errors.Is(err, flag.ErrHelp) {
@@ -93,13 +79,12 @@ func main() {
 		os.Exit(2)
 	}
 	if !args.NoDependencyCheck {
-		// check dependency compatibility between kitex cmd tool and dependency in go.mod
+
 		if err := versions.DefaultCheckDependencyAndProcess(); err != nil {
 			os.Exit(versions.CompatibilityCheckExitCode)
 		}
 	}
 
-	// git clone or checkout dependencies if needed
 	for i, inc := range args.Includes {
 		if strings.HasPrefix(inc, "git@") || strings.HasPrefix(inc, "http://") || strings.HasPrefix(inc, "https://") {
 			localGitPath, errMsg, err := util.RunGitCommand(inc)
@@ -115,7 +100,7 @@ func main() {
 	}
 
 	if args.IsProtobuf() {
-		// Whether using protoc or prutal, no longer generate the fast api for protobuf
+
 		args.Config.NoFastAPI = true
 		if !env.UseProtoc() {
 			g := prutal.NewPrutalGen(args.Config)
@@ -136,7 +121,7 @@ func main() {
 
 	if args.IsThrift() && !args.LocalThriftgo {
 		if err = sdk.InvokeThriftgoBySDK(curpath, cmd); err != nil {
-			// todo: optimize -use and remove error returned from thriftgo
+
 			out.WriteString(err.Error())
 		}
 	} else {

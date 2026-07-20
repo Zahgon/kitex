@@ -1,387 +1,123 @@
-/*
- * Copyright 2024 CloudWeGo Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package ttstream
 
 import (
 	"context"
-	"errors"
-	"fmt"
 	"sync"
 	"sync/atomic"
 	"time"
 
-	"github.com/cloudwego/gopkg/protocol/thrift"
-	"github.com/cloudwego/gopkg/protocol/ttheader"
-
-	"github.com/cloudwego/kitex/pkg/klog"
 	"github.com/cloudwego/kitex/pkg/rpcinfo"
 	"github.com/cloudwego/kitex/pkg/streaming"
-	"github.com/cloudwego/kitex/pkg/transmeta"
 )
 
 var _ ClientStreamMeta = (*clientStream)(nil)
 
 func newClientStream(ctx context.Context, writer streamWriter, smeta streamFrame) *clientStream {
-	s := newBasicStream(ctx, writer, smeta)
-	cs := &clientStream{
-		stream:        s,
-		headerSig:     make(chan int32, 1),
-		trailerSig:    make(chan int32, 1),
-		streamTimeout: notSetStreamTimeout,
-	}
-	s.reader = newStreamReader(ctx, cs.ctxDoneCallback)
-	return cs
+	_ = "STUB: not implemented"
+	return nil
 }
-
-// initial state: streamStateActive
-//
-//                     close()
-// streamStateActive ----------> streamStateInactive
-//       |                                 ^
-//       |                                 |
-//       | CloseSend()                     | close()
-//       v                                 |
-//       +--- streamStateHalfCloseLocal ---+
 
 type clientStream struct {
 	*stream
 	state            int32
 	metaFrameHandler MetaFrameHandler
-	// closeStreamException ensures that Send could also get the same
-	// exception as Recv
-	closeStreamException atomic.Value // type must be of *Exception
+
+	closeStreamException atomic.Value
 	storeExceptionOnce   sync.Once
 
-	// for Header()/Trailer()
 	headerSig  chan int32
 	trailerSig chan int32
 
 	traceCtl *rpcinfo.TraceController
-	// streamTimeout records the timeout value carried in the ctx when the stream was created
-	// it is used to return a more detailed error when the stream times out.
-	// -1 means timeout not set
+
 	streamTimeout time.Duration
 }
 
 func (s *clientStream) Header() (streaming.Header, error) {
-	sig := <-s.headerSig
-	switch sig {
-	case streamSigNone:
-		return make(streaming.Header), nil
-	case streamSigActive:
-		return s.header, nil
-	case streamSigInactive:
-		return nil, ErrClosedStream
-	case streamSigCancel:
-		return nil, ErrCanceledStream
-	}
-	return nil, errors.New("invalid stream signal")
+	_ = "STUB: not implemented"
+	return *new(streaming.Header), nil
 }
 
 func (s *clientStream) Trailer() (streaming.Trailer, error) {
-	sig := <-s.trailerSig
-	switch sig {
-	case streamSigNone:
-		return make(streaming.Trailer), nil
-	case streamSigActive:
-		return s.trailer, nil
-	case streamSigInactive:
-		return nil, ErrClosedStream
-	case streamSigCancel:
-		return nil, ErrCanceledStream
-	}
-	return nil, errors.New("invalid stream signal")
+	_ = "STUB: not implemented"
+	return *new(streaming.Trailer), nil
 }
 
 func (s *clientStream) SendMsg(ctx context.Context, req any) error {
-	if state := atomic.LoadInt32(&s.state); state != streamStateActive {
-		if ex := s.closeStreamException.Load(); ex == nil {
-			return errIllegalOperation.newBuilder().withSide(clientSide).withCause(errors.New("stream is closed send"))
-		} else {
-			return ex.(error)
-		}
-	}
-	return s.stream.SendMsg(ctx, req)
+	_ = "STUB: not implemented"
+	return nil
 }
 
 func (s *clientStream) RecvMsg(ctx context.Context, resp any) error {
-	return s.stream.RecvMsg(ctx, resp)
+	_ = "STUB: not implemented"
+	return nil
 }
 
-// CloseSend by clientStream only send trailer frame and will not close the stream
-func (s *clientStream) CloseSend(ctx context.Context) error {
-	if !atomic.CompareAndSwapInt32(&s.state, streamStateActive, streamStateHalfCloseLocal) {
-		return nil
-	}
-	return s.sendTrailer(nil)
-}
+func (s *clientStream) CloseSend(ctx context.Context) error { _ = "STUB: not implemented"; return nil }
 
 func (s *clientStream) Context() context.Context {
-	return s.ctx
+	_ = "STUB: not implemented"
+	return *new(context.Context)
 }
 
-// ctxDoneCallback convert ctx.Err() to ttstream related err and close client-side stream.
-// it is invoked in container.Pipe
 func (s *clientStream) ctxDoneCallback(ctx context.Context) error {
-	finalEx, noCancel, cancelPath := s.parseCtxErr(ctx)
-
-	s.close(finalEx, !noCancel, cancelPath, nil)
-	return finalEx
+	_ = "STUB: not implemented"
+	return nil
 }
 
 func (s *clientStream) recvTimeoutCallback(ctx context.Context) error {
-	var ex *Exception
-	if cErr := ctx.Err(); cErr != context.DeadlineExceeded {
-		ex = errInternalCancel.newBuilder().withSide(clientSide).withCause(cErr)
-	} else {
-		ex = newStreamRecvTimeoutException(s.recvTimeoutConfig)
-	}
-
-	if s.recvTimeoutConfig.DisableCancelRemote {
-		return ex
-	}
-	svcName := s.fromService()
-	cancelPath := appendCancelPath("", svcName)
-	// send Rst Frame to finish the stream lifecycle
-	s.close(ex, true, cancelPath, nil)
-	return ex
+	_ = "STUB: not implemented"
+	return nil
 }
 
-// parseCtxErr parses information in ctx.Err and returning ttstream Exception and cascading cancelPath
 func (s *clientStream) parseCtxErr(ctx context.Context) (finalEx *Exception, noCancel bool, cancelPath string) {
-	svcName := s.fromService()
-	cErr := ctx.Err()
-	switch cErr {
-	// biz code invokes cancel()
-	case context.Canceled:
-		finalEx = errBizCancel.newBuilder().withSide(clientSide)
-		// the initial node sending rst, the original cancelPath is empty
-		cancelPath = appendCancelPath("", svcName)
-	case context.DeadlineExceeded:
-		finalEx = newStreamTimeoutException(s.streamTimeout)
-		// the initial node sending rst, the original cancelPath is empty
-		cancelPath = appendCancelPath("", svcName)
-	default:
-		if tEx, ok := cErr.(*Exception); ok {
-			// for cascading cancel case, we need to change the side from server to client
-			finalEx = tEx.newBuilder().withSide(clientSide)
-			cancelPath = appendCancelPath(tEx.cancelPath, svcName)
-		} else {
-			// ctx provided by other sources(e.g. gRPC handler has been canceled, cErr is gRPC error)
-			finalEx = errInternalCancel.newBuilder().withSide(clientSide).withCause(cErr)
-			// as upstream cascading path may have existed(e.g. gRPC service chains), using non-ttstream path
-			// as a unified placeholder enables quick identification of such scenarios
-			cancelPath = appendCancelPath("non-ttstream path", svcName)
-		}
-	}
-	return
+	_ = "STUB: not implemented"
+	return nil, false, ""
 }
 
 func (s *clientStream) close(exception error, sendRst bool, cancelPath string, trailer streaming.Trailer) {
-	if exception != nil {
-		// store exception before change clientStream state
-		// otherwise clientStream.Send would not get the real stream closed reason
-		// only store once
-		s.storeExceptionOnce.Do(func() {
-			s.closeStreamException.Store(exception)
-		})
-	}
-	oldState := atomic.SwapInt32(&s.state, streamStateInactive)
-	if oldState == streamStateInactive {
-		// stream has been closed before
-		return
-	}
-	s.closeSignalMeta(trailer)
-
-	// handleStreamFinishEvent should be invoked before runCloseCallback
-	// since tracer would be finished in runCloseCallback
-	s.handleStreamFinishEvent(rpcinfo.StreamFinishEvent{TTStreamTrailer: trailer})
-	// clientStream.Recv would get the exception
-	s.reader.close(exception)
-	if sendRst {
-		if err := s.sendRst(exception, cancelPath); err != nil {
-			klog.Errorf("KITEX: stream[%d] send Rst Frame failed, err: %v", s.sid, err)
-		}
-	}
-	// ServerStreaming would invoke CloseSend automatically
-	if oldState != streamStateHalfCloseLocal {
-		// For clientStream, if trailer frame or rst frame are received, finish the lifecycle directly.
-		// But Some downstream components may not be upgraded and need to receive a Trailer Frame to end the Stream's lifecycle.
-		// For better compatibility, we choose to send a Trailer Frame when the clientStream is closed.
-		//
-		// todo: remove this logic in the future.
-		s.sendTrailer(nil)
-	}
-	s.runCloseCallback(exception)
+	_ = "STUB: not implemented"
+	return
 }
 
 func (s *clientStream) closeSignalMeta(trailer streaming.Trailer) {
-	// signal header
-	headerSig := streamSigInactive
-	if trailer == nil {
-		headerSig = streamSigNone
-	}
-	select {
-	case s.headerSig <- headerSig:
-	default:
-	}
-
-	// signal trailer
-	trailerSig := streamSigActive
-	if trailer == nil {
-		trailerSig = streamSigInactive
-	}
-	s.trailer = trailer
-	select {
-	case s.trailerSig <- trailerSig:
-	default:
-	}
+	_ = "STUB: not implemented"
+	return
 }
 
 func (s *clientStream) setMetaFrameHandler(metaHandler MetaFrameHandler) {
-	s.metaFrameHandler = metaHandler
+	_ = "STUB: not implemented"
+	return
 }
 
 func (s *clientStream) setTraceController(traceCtl *rpcinfo.TraceController) {
-	s.traceCtl = traceCtl
+	_ = "STUB: not implemented"
+	return
 }
 
-func (s *clientStream) setStreamTimeout(tm time.Duration) {
-	s.streamTimeout = tm
-}
+func (s *clientStream) setStreamTimeout(tm time.Duration) { _ = "STUB: not implemented"; return }
 
 func (s *clientStream) handleStreamStartEvent(event rpcinfo.StreamStartEvent) {
-	if s.traceCtl == nil {
-		return
-	}
-	s.traceCtl.HandleStreamStartEvent(s.ctx, s.rpcInfo, event)
+	_ = "STUB: not implemented"
+	return
 }
 
 func (s *clientStream) handleStreamRecvHeaderEvent(event rpcinfo.StreamRecvHeaderEvent) {
-	if s.traceCtl == nil {
-		return
-	}
-	s.traceCtl.HandleStreamRecvHeaderEvent(s.ctx, s.rpcInfo, event)
+	_ = "STUB: not implemented"
+	return
 }
 
 func (s *clientStream) handleStreamFinishEvent(event rpcinfo.StreamFinishEvent) {
-	if s.traceCtl == nil {
-		return
-	}
-	s.traceCtl.HandleStreamFinishEvent(s.ctx, s.rpcInfo, event)
+	_ = "STUB: not implemented"
+	return
 }
 
-// === clientStream OnRead callback
+func (s *clientStream) onReadMetaFrame(fr *Frame) error { _ = "STUB: not implemented"; return nil }
 
-func (s *clientStream) onReadMetaFrame(fr *Frame) error {
-	if s.metaFrameHandler == nil {
-		return nil
-	}
-	return s.metaFrameHandler.OnMetaFrame(s.ctx, fr.meta, fr.header, fr.payload)
-}
+func (s *clientStream) onReadHeaderFrame(fr *Frame) error { _ = "STUB: not implemented"; return nil }
 
-func (s *clientStream) onReadHeaderFrame(fr *Frame) error {
-	if s.header != nil {
-		return errUnexpectedHeader.newBuilder().withSide(clientSide).withCause(fmt.Errorf("stream[%d] already set header", s.sid))
-	}
-	s.header = fr.header
-	select {
-	case s.headerSig <- streamSigActive:
-	default:
-		return errUnexpectedHeader.newBuilder().withSide(clientSide).withCause(fmt.Errorf("stream[%d] already set header", s.sid))
-	}
-	s.handleStreamRecvHeaderEvent(rpcinfo.StreamRecvHeaderEvent{TTStreamHeader: s.header})
-	return nil
-}
+func (s *clientStream) onReadTrailerFrame(fr *Frame) error { _ = "STUB: not implemented"; return nil }
 
-func (s *clientStream) onReadTrailerFrame(fr *Frame) error {
-	var exception error
-	// when server-side returns non-biz error, it will be wrapped as ApplicationException stored in trailer frame payload
-	if len(fr.payload) > 0 {
-		// exception is type of (*thrift.ApplicationException)
-		appEx, err := decodeException(fr.payload)
-		if err != nil {
-			exception = errIllegalFrame.newBuilder().withSide(clientSide).withCause(err)
-		} else {
-			exception = errApplicationException.newBuilder().withSide(clientSide).withCause(appEx)
-		}
-	} else if len(fr.trailer) > 0 {
-		// when server-side returns biz error, payload is empty and biz error information is stored in trailer frame header
-		bizErr, err := transmeta.ParseBizStatusErr(fr.trailer)
-		if err != nil {
-			exception = errIllegalBizErr.newBuilder().withSide(clientSide).withCause(err)
-		} else if bizErr != nil {
-			// todo: unify bizErr with Exception
-			// bizErr is independent of rpc exception handling
-			exception = bizErr
-			if setter, ok := s.rpcInfo.Invocation().(rpcinfo.InvocationSetter); ok {
-				setter.SetBizStatusErr(bizErr)
-			}
-		}
-	}
+func (s *clientStream) onReadRstFrame(fr *Frame) (err error) { _ = "STUB: not implemented"; return nil }
 
-	// client-side stream recv trailer, the lifecycle of whole stream has ended
-	s.close(exception, false, "", fr.trailer)
-	return nil
-}
-
-func (s *clientStream) onReadRstFrame(fr *Frame) (err error) {
-	var rstEx *Exception
-	var appEx *thrift.ApplicationException
-	if len(fr.payload) > 0 {
-		// exception is type of (*thrift.ApplicationException)
-		appEx, err = decodeException(fr.payload)
-		if err != nil {
-			klog.Errorf("KITEX: stream[%d] unmarshal Exception in rst frame failed, err: %v", s.sid, err)
-			appEx = defaultRstException
-		}
-	} else {
-		klog.Errorf("KITEX: stream[%d] recv rst frame without payload", s.sid)
-		appEx = defaultRstException
-	}
-
-	// distract cancelPath information
-	var cancelPath string
-	if fr.header != nil {
-		hdrVia, ok := fr.header[ttheader.HeaderTTStreamCancelPath]
-		if ok {
-			cancelPath = hdrVia
-		}
-	}
-	rstEx = errDownstreamCancel.newBuilder().withSide(clientSide)
-	if cancelPath != "" {
-		rstEx = rstEx.setOrAppendCancelPath(cancelPath).withCauseAndTypeId(appEx, appEx.TypeId())
-	} else {
-		rstEx = rstEx.withCauseAndTypeId(appEx, appEx.TypeId())
-	}
-	s.cancelSignalMeta()
-
-	// when receiving rst frame, we should close stream and there is no need to send rst frame
-	s.close(rstEx, false, "", nil)
-	return nil
-}
-
-func (s *clientStream) cancelSignalMeta() {
-	select {
-	case s.trailerSig <- streamSigCancel:
-	default:
-	}
-	select {
-	case s.headerSig <- streamSigCancel:
-	default:
-	}
-}
+func (s *clientStream) cancelSignalMeta() { _ = "STUB: not implemented"; return }

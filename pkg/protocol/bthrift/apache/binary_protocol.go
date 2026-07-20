@@ -1,19 +1,3 @@
-/*
- * Copyright 2021 CloudWeGo Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package apache
 
 import (
@@ -23,10 +7,6 @@ import (
 	"github.com/cloudwego/gopkg/bufiox"
 	"github.com/cloudwego/gopkg/protocol/thrift"
 )
-
-/*
-	BinaryProtocol implementation was moved from cloudwego/kitex/pkg/remote/codec/thrift/binary_protocol.go
-*/
 
 var (
 	_ TProtocol = (*BinaryProtocol)(nil)
@@ -38,7 +18,6 @@ var (
 	}
 )
 
-// BinaryProtocol was moved from cloudwego/kitex/pkg/remote/codec/thrift
 type BinaryProtocol struct {
 	r *thrift.BufferReader
 	w *thrift.BufferWriter
@@ -47,298 +26,180 @@ type BinaryProtocol struct {
 	bw bufiox.Writer
 }
 
-// NewBinaryProtocol ...
-// Deprecated: use github.com/cloudwego/gopkg/protocol/thrift.NewBufferReader|NewBufferWriter
 func NewBinaryProtocol(r bufiox.Reader, w bufiox.Writer) *BinaryProtocol {
-	bp := bpPool.Get().(*BinaryProtocol)
-	if r != nil {
-		bp.r = thrift.NewBufferReader(r)
-		bp.br = r
-	}
-	if w != nil {
-		bp.w = thrift.NewBufferWriter(w)
-		bp.bw = w
-	}
-	return bp
+	_ = "STUB: not implemented"
+	return nil
 }
 
-// Recycle ...
-func (p *BinaryProtocol) Recycle() {
-	if p.r != nil {
-		p.r.Recycle()
-	}
-	if p.w != nil {
-		p.w.Recycle()
-	}
-	*p = BinaryProtocol{}
-	bpPool.Put(p)
-}
+func (p *BinaryProtocol) Recycle() { _ = "STUB: not implemented"; return }
 
-/**
- * Writing Methods
- */
-
-// WriteMessageBegin ...
 func (p *BinaryProtocol) WriteMessageBegin(name string, typeID TMessageType, seqID int32) error {
-	return p.w.WriteMessageBegin(name, thrift.TMessageType(typeID), seqID)
-}
-
-// WriteMessageEnd ...
-func (p *BinaryProtocol) WriteMessageEnd() error {
+	_ = "STUB: not implemented"
 	return nil
 }
 
-// WriteStructBegin ...
-func (p *BinaryProtocol) WriteStructBegin(name string) error {
-	return nil
-}
+func (p *BinaryProtocol) WriteMessageEnd() error { _ = "STUB: not implemented"; return nil }
 
-// WriteStructEnd ...
-func (p *BinaryProtocol) WriteStructEnd() error {
-	return nil
-}
+func (p *BinaryProtocol) WriteStructBegin(name string) error { _ = "STUB: not implemented"; return nil }
 
-// WriteFieldBegin ...
+func (p *BinaryProtocol) WriteStructEnd() error { _ = "STUB: not implemented"; return nil }
+
 func (p *BinaryProtocol) WriteFieldBegin(name string, typeID TType, id int16) error {
-	return p.w.WriteFieldBegin(thrift.TType(typeID), id)
-}
-
-// WriteFieldEnd ...
-func (p *BinaryProtocol) WriteFieldEnd() error {
+	_ = "STUB: not implemented"
 	return nil
 }
 
-// WriteFieldStop ...
-func (p *BinaryProtocol) WriteFieldStop() error {
-	return p.w.WriteFieldStop()
-}
+func (p *BinaryProtocol) WriteFieldEnd() error { _ = "STUB: not implemented"; return nil }
 
-// WriteMapBegin ...
+func (p *BinaryProtocol) WriteFieldStop() error { _ = "STUB: not implemented"; return nil }
+
 func (p *BinaryProtocol) WriteMapBegin(keyType, valueType TType, size int) error {
-	return p.w.WriteMapBegin(thrift.TType(keyType), thrift.TType(valueType), size)
-}
-
-// WriteMapEnd ...
-func (p *BinaryProtocol) WriteMapEnd() error {
+	_ = "STUB: not implemented"
 	return nil
 }
 
-// WriteListBegin ...
+func (p *BinaryProtocol) WriteMapEnd() error { _ = "STUB: not implemented"; return nil }
+
 func (p *BinaryProtocol) WriteListBegin(elemType TType, size int) error {
-	return p.w.WriteListBegin(thrift.TType(elemType), size)
-}
-
-// WriteListEnd ...
-func (p *BinaryProtocol) WriteListEnd() error {
+	_ = "STUB: not implemented"
 	return nil
 }
 
-// WriteSetBegin ...
+func (p *BinaryProtocol) WriteListEnd() error { _ = "STUB: not implemented"; return nil }
+
 func (p *BinaryProtocol) WriteSetBegin(elemType TType, size int) error {
-	return p.w.WriteSetBegin(thrift.TType(elemType), size)
-}
-
-// WriteSetEnd ...
-func (p *BinaryProtocol) WriteSetEnd() error {
+	_ = "STUB: not implemented"
 	return nil
 }
 
-// WriteBool ...
-func (p *BinaryProtocol) WriteBool(value bool) error {
-	return p.w.WriteBool(value)
-}
+func (p *BinaryProtocol) WriteSetEnd() error { _ = "STUB: not implemented"; return nil }
 
-// WriteByte ...
-func (p *BinaryProtocol) WriteByte(value int8) error {
-	return p.w.WriteByte(value)
-}
+func (p *BinaryProtocol) WriteBool(value bool) error { _ = "STUB: not implemented"; return nil }
 
-// WriteI16 ...
-func (p *BinaryProtocol) WriteI16(value int16) error {
-	return p.w.WriteI16(value)
-}
+func (p *BinaryProtocol) WriteByte(value int8) error { _ = "STUB: not implemented"; return nil }
 
-// WriteI32 ...
-func (p *BinaryProtocol) WriteI32(value int32) error {
-	return p.w.WriteI32(value)
-}
+func (p *BinaryProtocol) WriteI16(value int16) error { _ = "STUB: not implemented"; return nil }
 
-// WriteI64 ...
-func (p *BinaryProtocol) WriteI64(value int64) error {
-	return p.w.WriteI64(value)
-}
+func (p *BinaryProtocol) WriteI32(value int32) error { _ = "STUB: not implemented"; return nil }
 
-// WriteDouble ...
-func (p *BinaryProtocol) WriteDouble(value float64) error {
-	return p.w.WriteDouble(value)
-}
+func (p *BinaryProtocol) WriteI64(value int64) error { _ = "STUB: not implemented"; return nil }
 
-// WriteString ...
-func (p *BinaryProtocol) WriteString(value string) error {
-	return p.w.WriteString(value)
-}
+func (p *BinaryProtocol) WriteDouble(value float64) error { _ = "STUB: not implemented"; return nil }
 
-// WriteBinary ...
-func (p *BinaryProtocol) WriteBinary(value []byte) error {
-	return p.w.WriteBinary(value)
-}
+func (p *BinaryProtocol) WriteString(value string) error { _ = "STUB: not implemented"; return nil }
 
-/**
- * Reading methods
- */
+func (p *BinaryProtocol) WriteBinary(value []byte) error { _ = "STUB: not implemented"; return nil }
 
-// ReadMessageBegin ...
 func (p *BinaryProtocol) ReadMessageBegin() (name string, typeID TMessageType, seqID int32, err error) {
-	var tid thrift.TMessageType
-	name, tid, seqID, err = p.r.ReadMessageBegin()
-	typeID = TMessageType(tid)
-	return
+	_ = "STUB: not implemented"
+	return "", *new(TMessageType), 0, nil
 }
 
-// ReadMessageEnd ...
-func (p *BinaryProtocol) ReadMessageEnd() error {
-	return nil
-}
+func (p *BinaryProtocol) ReadMessageEnd() error { _ = "STUB: not implemented"; return nil }
 
-// ReadStructBegin ...
 func (p *BinaryProtocol) ReadStructBegin() (name string, err error) {
-	return
+	_ = "STUB: not implemented"
+	return "", nil
 }
 
-// ReadStructEnd ...
-func (p *BinaryProtocol) ReadStructEnd() error {
-	return nil
-}
+func (p *BinaryProtocol) ReadStructEnd() error { _ = "STUB: not implemented"; return nil }
 
-// ReadFieldBegin ...
 func (p *BinaryProtocol) ReadFieldBegin() (name string, typeID TType, id int16, err error) {
-	var tid thrift.TType
-	tid, id, err = p.r.ReadFieldBegin()
-	typeID = TType(tid)
-	return
+	_ = "STUB: not implemented"
+	return "", *new(TType), 0, nil
 }
 
-// ReadFieldEnd ...
-func (p *BinaryProtocol) ReadFieldEnd() error {
-	return nil
-}
+func (p *BinaryProtocol) ReadFieldEnd() error { _ = "STUB: not implemented"; return nil }
 
-// ReadMapBegin ...
 func (p *BinaryProtocol) ReadMapBegin() (kType, vType TType, size int, err error) {
-	var ktype, vtype thrift.TType
-	ktype, vtype, size, err = p.r.ReadMapBegin()
-	kType = TType(ktype)
-	vType = TType(vtype)
-	return
+	_ = "STUB: not implemented"
+	return *new(TType), *new(TType), 0, nil
 }
 
-// ReadMapEnd ...
-func (p *BinaryProtocol) ReadMapEnd() error {
-	return nil
-}
+func (p *BinaryProtocol) ReadMapEnd() error { _ = "STUB: not implemented"; return nil }
 
-// ReadListBegin ...
 func (p *BinaryProtocol) ReadListBegin() (elemType TType, size int, err error) {
-	var etype thrift.TType
-	etype, size, err = p.r.ReadListBegin()
-	elemType = TType(etype)
-	return
+	_ = "STUB: not implemented"
+	return *new(TType), 0, nil
 }
 
-// ReadListEnd ...
-func (p *BinaryProtocol) ReadListEnd() error {
-	return nil
-}
+func (p *BinaryProtocol) ReadListEnd() error { _ = "STUB: not implemented"; return nil }
 
-// ReadSetBegin ...
 func (p *BinaryProtocol) ReadSetBegin() (elemType TType, size int, err error) {
-	var etype thrift.TType
-	etype, size, err = p.r.ReadSetBegin()
-	elemType = TType(etype)
-	return
+	_ = "STUB: not implemented"
+	return *new(TType), 0, nil
 }
 
-// ReadSetEnd ...
-func (p *BinaryProtocol) ReadSetEnd() error {
-	return nil
-}
+func (p *BinaryProtocol) ReadSetEnd() error { _ = "STUB: not implemented"; return nil }
 
-// ReadBool ...
-func (p *BinaryProtocol) ReadBool() (bool, error) {
-	return p.r.ReadBool()
-}
+func (p *BinaryProtocol) ReadBool() (bool, error) { _ = "STUB: not implemented"; return false, nil }
 
-// ReadByte ...
 func (p *BinaryProtocol) ReadByte() (value int8, err error) {
-	return p.r.ReadByte()
+	_ = "STUB: not implemented"
+	return 0, nil
 }
 
-// ReadI16 ...
 func (p *BinaryProtocol) ReadI16() (value int16, err error) {
-	return p.r.ReadI16()
+	_ = "STUB: not implemented"
+	return 0, nil
 }
 
-// ReadI32 ...
 func (p *BinaryProtocol) ReadI32() (value int32, err error) {
-	return p.r.ReadI32()
+	_ = "STUB: not implemented"
+	return 0, nil
 }
 
-// ReadI64 ...
 func (p *BinaryProtocol) ReadI64() (value int64, err error) {
-	return p.r.ReadI64()
+	_ = "STUB: not implemented"
+	return 0, nil
 }
 
-// ReadDouble ...
 func (p *BinaryProtocol) ReadDouble() (value float64, err error) {
-	return p.r.ReadDouble()
+	_ = "STUB: not implemented"
+	return 0, nil
 }
 
-// ReadString ...
 func (p *BinaryProtocol) ReadString() (value string, err error) {
-	return p.r.ReadString()
+	_ = "STUB: not implemented"
+	return "", nil
 }
 
-// ReadBinary ...
-func (p *BinaryProtocol) ReadBinary() ([]byte, error) {
-	return p.r.ReadBinary()
-}
+func (p *BinaryProtocol) ReadBinary() ([]byte, error) { _ = "STUB: not implemented"; return nil, nil }
 
-// Flush ...
 func (p *BinaryProtocol) Flush(ctx context.Context) (err error) {
-	err = p.bw.Flush()
-	if err != nil {
-		return thrift.NewProtocolExceptionWithErr(err)
-	}
+	_ = "STUB: not implemented"
 	return nil
 }
 
-// Skip ...
-func (p *BinaryProtocol) Skip(fieldType TType) (err error) {
-	return SkipDefaultDepth(p, fieldType)
-}
+func (p *BinaryProtocol) Skip(fieldType TType) (err error) { _ = "STUB: not implemented"; return nil }
 
-// Transport ...
-func (p *BinaryProtocol) Transport() TTransport {
-	return ttransportByteBuffer{}
-}
+func (p *BinaryProtocol) Transport() TTransport { _ = "STUB: not implemented"; return *new(TTransport) }
 
 func (p *BinaryProtocol) GetBufioxReader() bufiox.Reader {
-	return p.br
+	_ = "STUB: not implemented"
+	return *new(bufiox.Reader)
 }
 
 func (p *BinaryProtocol) GetBufioxWriter() bufiox.Writer {
-	return p.bw
+	_ = "STUB: not implemented"
+	return *new(bufiox.Writer)
 }
 
-// ttransportByteBuffer ...
-// for exposing remote.ByteBuffer via p.Transport(),
-// mainly for testing purpose, see internal/mocks/athrift/utils.go
 type ttransportByteBuffer struct{}
 
-func (ttransportByteBuffer) Close() error                          { panic("not implemented") }
-func (ttransportByteBuffer) Flush(ctx context.Context) (err error) { panic("not implemented") }
-func (ttransportByteBuffer) IsOpen() bool                          { panic("not implemented") }
-func (ttransportByteBuffer) Open() error                           { panic("not implemented") }
-func (p ttransportByteBuffer) RemainingBytes() uint64              { panic("not implemented") }
-func (ttransportByteBuffer) Read(p []byte) (n int, err error)      { panic("not implemented") }
-func (ttransportByteBuffer) Write(p []byte) (n int, err error)     { panic("not implemented") }
+func (ttransportByteBuffer) Close() error { _ = "STUB: not implemented"; return nil }
+func (ttransportByteBuffer) Flush(ctx context.Context) (err error) {
+	_ = "STUB: not implemented"
+	return nil
+}
+func (ttransportByteBuffer) IsOpen() bool             { _ = "STUB: not implemented"; return false }
+func (ttransportByteBuffer) Open() error              { _ = "STUB: not implemented"; return nil }
+func (p ttransportByteBuffer) RemainingBytes() uint64 { _ = "STUB: not implemented"; return 0 }
+func (ttransportByteBuffer) Read(p []byte) (n int, err error) {
+	_ = "STUB: not implemented"
+	return 0, nil
+}
+func (ttransportByteBuffer) Write(p []byte) (n int, err error) {
+	_ = "STUB: not implemented"
+	return 0, nil
+}

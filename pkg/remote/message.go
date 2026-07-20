@@ -1,19 +1,3 @@
-/*
- * Copyright 2021 CloudWeGo Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package remote
 
 import (
@@ -36,19 +20,14 @@ func init() {
 	transInfoPool.New = newTransInfo
 }
 
-// MessageType indicates the type of message.
 type MessageType int32
 
-// MessageTypes.
 const (
-	// 0-4 corresponding to thrift.TMessageType
 	InvalidMessageType MessageType = 0
 	Call               MessageType = 1
 	Reply              MessageType = 2
 	Exception          MessageType = 3
-	// Oneway means there's no need to wait for the response.
-	// When the actual message is transmitted, Oneway writes a Call to avoid compatibility issues
-	// and to maintain consistency with the original logic.
+
 	Oneway MessageType = 4
 
 	Stream MessageType = 5
@@ -57,39 +36,32 @@ const (
 )
 
 const (
-	// ReadFailed .
 	ReadFailed string = "RFailed"
 
-	// MeshHeader use in message.Tag to check MeshHeader
 	MeshHeader string = "mHeader"
 )
 
-// ProtocolInfo is used to indicate the transport protocol and payload codec information.
 type ProtocolInfo struct {
 	TransProto transport.Protocol
 	CodecType  serviceinfo.PayloadCodec
 }
 
-// ServiceSearcher is used to search the service info by service name and method name,
-// strict equals to true means the service name must match the registered service name.
 type ServiceSearcher interface {
 	SearchService(svcName, methodName string, strict bool, codecType serviceinfo.PayloadCodec) *serviceinfo.ServiceInfo
 }
 
 type keyServiceSearcher struct{}
 
-// GetServiceSearcher returns the service searcher from context.
 func GetServiceSearcher(ctx context.Context) ServiceSearcher {
-	svcSearcher, _ := ctx.Value(keyServiceSearcher{}).(ServiceSearcher)
-	return svcSearcher
+	_ = "STUB: not implemented"
+	return *new(ServiceSearcher)
 }
 
-// WithServiceSearcher sets the service searcher to context.
 func WithServiceSearcher(ctx context.Context, svcSearcher ServiceSearcher) context.Context {
-	return context.WithValue(ctx, keyServiceSearcher{}, svcSearcher)
+	_ = "STUB: not implemented"
+	return *new(context.Context)
 }
 
-// Message is the core abstraction for Kitex message.
 type Message interface {
 	RPCInfo() rpcinfo.RPCInfo
 	Data() interface{}
@@ -105,31 +77,17 @@ type Message interface {
 	SetPayloadCodec(pc PayloadCodec)
 	Recycle()
 
-	// Deprecated: use rpcinfo.Config().TransportProtocol() or rpcinfo.Config().PayloadCodec() instead
 	ProtocolInfo() ProtocolInfo
 }
 
-// NewMessage creates a new Message using the given info.
 func NewMessage(data interface{}, ri rpcinfo.RPCInfo, msgType MessageType, rpcRole RPCRole) Message {
-	msg := messagePool.Get().(*message)
-	msg.data = data
-	msg.rpcInfo = ri
-	msg.msgType = msgType
-	msg.rpcRole = rpcRole
-	msg.transInfo = transInfoPool.Get().(*transInfo)
-	return msg
+	_ = "STUB: not implemented"
+	return *new(Message)
 }
 
-// RecycleMessage is used to recycle message.
-func RecycleMessage(msg Message) {
-	if msg != nil {
-		msg.Recycle()
-	}
-}
+func RecycleMessage(msg Message) { _ = "STUB: not implemented"; return }
 
-func newMessage() interface{} {
-	return &message{tags: make(map[string]interface{})}
-}
+func newMessage() interface{} { _ = "STUB: not implemented"; return nil }
 
 type message struct {
 	msgType      MessageType
@@ -143,107 +101,39 @@ type message struct {
 	payloadCodec PayloadCodec
 }
 
-func (m *message) zero() {
-	m.msgType = InvalidMessageType
-	m.data = nil
-	m.rpcInfo = nil
-	m.rpcRole = -1
-	m.compressType = NoCompress
-	m.payloadSize = 0
-	if m.transInfo != nil {
-		m.transInfo.Recycle()
-		m.transInfo = nil
-	}
-	for k := range m.tags {
-		delete(m.tags, k)
-	}
-}
+func (m *message) zero() { _ = "STUB: not implemented"; return }
 
-// RPCInfo implements the Message interface.
 func (m *message) RPCInfo() rpcinfo.RPCInfo {
-	return m.rpcInfo
+	_ = "STUB: not implemented"
+	return *new(rpcinfo.RPCInfo)
 }
 
-// Data implements the Message interface.
-func (m *message) Data() interface{} {
-	return m.data
-}
+func (m *message) Data() interface{} { _ = "STUB: not implemented"; return nil }
 
-// NewData implements the Message interface.
-func (m *message) NewData(method string) (ok bool) {
-	if m.data != nil {
-		return false
-	}
-	if mt := m.rpcInfo.Invocation().MethodInfo(); mt != nil {
-		m.data = mt.NewArgs()
-	}
-	if m.data == nil {
-		return false
-	}
-	return true
-}
+func (m *message) NewData(method string) (ok bool) { _ = "STUB: not implemented"; return false }
 
-// MessageType implements the Message interface.
-func (m *message) MessageType() MessageType {
-	return m.msgType
-}
+func (m *message) MessageType() MessageType { _ = "STUB: not implemented"; return *new(MessageType) }
 
-// SetMessageType implements the Message interface.
-func (m *message) SetMessageType(mt MessageType) {
-	m.msgType = mt
-}
+func (m *message) SetMessageType(mt MessageType) { _ = "STUB: not implemented"; return }
 
-// RPCRole implements the Message interface.
-func (m *message) RPCRole() RPCRole {
-	return m.rpcRole
-}
+func (m *message) RPCRole() RPCRole { _ = "STUB: not implemented"; return *new(RPCRole) }
 
-// TransInfo implements the Message interface.
-func (m *message) TransInfo() TransInfo {
-	return m.transInfo
-}
+func (m *message) TransInfo() TransInfo { _ = "STUB: not implemented"; return *new(TransInfo) }
 
-// Tags implements the Message interface.
-func (m *message) Tags() map[string]interface{} {
-	return m.tags
-}
+func (m *message) Tags() map[string]interface{} { _ = "STUB: not implemented"; return nil }
 
-// ProtocolInfo implements the Message interface.
-func (m *message) ProtocolInfo() ProtocolInfo {
-	cfg := m.rpcInfo.Config()
-	return ProtocolInfo{
-		TransProto: cfg.TransportProtocol(),
-		CodecType:  cfg.PayloadCodec(),
-	}
-}
+func (m *message) ProtocolInfo() ProtocolInfo { _ = "STUB: not implemented"; return *new(ProtocolInfo) }
 
-// PayloadLen implements the Message interface.
-func (m *message) PayloadLen() int {
-	return m.payloadSize
-}
+func (m *message) PayloadLen() int { _ = "STUB: not implemented"; return 0 }
 
-// SetPayloadLen implements the Message interface.
-func (m *message) SetPayloadLen(size int) {
-	m.payloadSize = size
-}
+func (m *message) SetPayloadLen(size int) { _ = "STUB: not implemented"; return }
 
-// PayloadCodec implements the Message interface.
-func (m *message) PayloadCodec() PayloadCodec {
-	return m.payloadCodec
-}
+func (m *message) PayloadCodec() PayloadCodec { _ = "STUB: not implemented"; return *new(PayloadCodec) }
 
-// SetPayloadCodec implements the Message interface.
-func (m *message) SetPayloadCodec(pc PayloadCodec) {
-	m.payloadCodec = pc
-}
+func (m *message) SetPayloadCodec(pc PayloadCodec) { _ = "STUB: not implemented"; return }
 
-// Recycle is used to recycle the message.
-func (m *message) Recycle() {
-	m.zero()
-	messagePool.Put(m)
-}
+func (m *message) Recycle() { _ = "STUB: not implemented"; return }
 
-// TransInfo contains transport information.
 type TransInfo interface {
 	TransStrInfo() map[string]string
 	TransIntInfo() map[uint16]string
@@ -252,67 +142,21 @@ type TransInfo interface {
 	Recycle()
 }
 
-func newTransInfo() interface{} {
-	return &transInfo{
-		intInfo: make(map[uint16]string),
-		strInfo: make(map[string]string),
-	}
-}
+func newTransInfo() interface{} { _ = "STUB: not implemented"; return nil }
 
 type transInfo struct {
 	strInfo map[string]string
 	intInfo map[uint16]string
 }
 
-func (ti *transInfo) zero() {
-	for k := range ti.intInfo {
-		delete(ti.intInfo, k)
-	}
-	for k := range ti.strInfo {
-		delete(ti.strInfo, k)
-	}
-}
+func (ti *transInfo) zero() { _ = "STUB: not implemented"; return }
 
-// TransIntInfo implements the TransInfo interface.
-func (ti *transInfo) TransIntInfo() map[uint16]string {
-	return ti.intInfo
-}
+func (ti *transInfo) TransIntInfo() map[uint16]string { _ = "STUB: not implemented"; return nil }
 
-// PutTransIntInfo implements the TransInfo interface.
-func (ti *transInfo) PutTransIntInfo(kvInfo map[uint16]string) {
-	if kvInfo == nil {
-		return
-	}
-	if len(ti.intInfo) == 0 {
-		ti.intInfo = kvInfo
-	} else {
-		for k, v := range kvInfo {
-			ti.intInfo[k] = v
-		}
-	}
-}
+func (ti *transInfo) PutTransIntInfo(kvInfo map[uint16]string) { _ = "STUB: not implemented"; return }
 
-// TransStrInfo implements the TransInfo interface.
-func (ti *transInfo) TransStrInfo() map[string]string {
-	return ti.strInfo
-}
+func (ti *transInfo) TransStrInfo() map[string]string { _ = "STUB: not implemented"; return nil }
 
-// PutTransStrInfo implements the TransInfo interface.
-func (ti *transInfo) PutTransStrInfo(kvInfo map[string]string) {
-	if kvInfo == nil {
-		return
-	}
-	if len(ti.strInfo) == 0 {
-		ti.strInfo = kvInfo
-	} else {
-		for k, v := range kvInfo {
-			ti.strInfo[k] = v
-		}
-	}
-}
+func (ti *transInfo) PutTransStrInfo(kvInfo map[string]string) { _ = "STUB: not implemented"; return }
 
-// Recycle is used to recycle the transInfo.
-func (ti *transInfo) Recycle() {
-	ti.zero()
-	transInfoPool.Put(ti)
-}
+func (ti *transInfo) Recycle() { _ = "STUB: not implemented"; return }

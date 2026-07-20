@@ -1,19 +1,3 @@
-/*
- * Copyright 2025 CloudWeGo Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package generic
 
 import (
@@ -26,16 +10,13 @@ type binaryThriftCodecV2 struct {
 }
 
 func newBinaryThriftCodecV2(svcName string) *binaryThriftCodecV2 {
-	return &binaryThriftCodecV2{
-		svcName:      svcName,
-		readerWriter: thrift.NewRawReaderWriter(),
-	}
+	_ = "STUB: not implemented"
+	return nil
 }
 
-func (c *binaryThriftCodecV2) Name() string {
-	return "BinaryThriftV2"
-}
+func (c *binaryThriftCodecV2) Name() string { _ = "STUB: not implemented"; return "" }
 
 func (c *binaryThriftCodecV2) getMessageReaderWriter() interface{} {
-	return c.readerWriter
+	_ = "STUB: not implemented"
+	return nil
 }

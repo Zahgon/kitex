@@ -1,31 +1,11 @@
-/*
- * Copyright 2021 CloudWeGo Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package descriptor
 
 import (
-	"reflect"
-
 	"github.com/cloudwego/gopkg/protocol/thrift"
 )
 
-// Type constants in the Thrift protocol
 type Type byte
 
-// Types
 const (
 	STOP   Type = 0
 	VOID   Type = 1
@@ -44,7 +24,7 @@ const (
 	LIST   Type = 15
 	UTF8   Type = 16
 	UTF16  Type = 17
-	// BINARY Type = 18   wrong and unused
+
 	JSON Type = 19
 )
 
@@ -66,37 +46,10 @@ var typeNames = map[Type]string{
 	UTF16:  "UTF16",
 }
 
-// String for format and print
-func (p Type) String() string {
-	if s, ok := typeNames[p]; ok {
-		return s
-	}
-	return "Unknown"
-}
+func (p Type) String() string { _ = "STUB: not implemented"; return "" }
 
-// ToThriftTType convert to thrift.TType
-//
-// Deprecated: use thrift.TType(t) directly
-func (p Type) ToThriftTType() thrift.TType {
-	return thrift.TType(p)
-}
+func (p Type) ToThriftTType() thrift.TType { _ = "STUB: not implemented"; return *new(thrift.TType) }
 
-// FromThriftTType ...
-//
-// This func was used to convert apache thrift.Type to descriptor.Type.
-// We should use descriptor.Type(t) directly without binding apache thrift
-//
-// Deprecated: use descriptor.Type(t)
-func FromThriftTType(v interface{}) Type {
-	rv := reflect.ValueOf(v)
-	if rv.CanUint() { // byte
-		return Type(rv.Uint())
-	}
-	if rv.CanInt() { // int8
-		return Type(rv.Int())
-	}
-	panic(rv.Type().String())
-}
+func FromThriftTType(v interface{}) Type { _ = "STUB: not implemented"; return *new(Type) }
 
-// Void use empty struct as void instead of `nil`, because sometimes `nil` was used as optional none
 type Void struct{}

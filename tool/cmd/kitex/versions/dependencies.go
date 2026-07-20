@@ -1,30 +1,8 @@
-// Copyright 2024 CloudWeGo Authors
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//   http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 package versions
 
 import (
-	"context"
 	"errors"
-	"fmt"
-	"os/exec"
 	"regexp"
-	"strings"
-	"time"
-
-	"github.com/cloudwego/kitex"
-	"github.com/cloudwego/kitex/tool/internal_pkg/log"
 )
 
 const (
@@ -37,65 +15,15 @@ func init() {
 	dm = &dependencyManager{}
 }
 
-// RegisterMinDepVersion registers Minimal Dependency Version to be checked
-func RegisterMinDepVersion(depVer *MinDepVersion) error {
-	return dm.Register(depVer)
-}
+func RegisterMinDepVersion(depVer *MinDepVersion) error { _ = "STUB: not implemented"; return nil }
 
-// CheckDependency is responsible for checking the compatibility of dependency
-// and return the checking results.
-// After calling CheckDependencies(), you should check if the result is Nil:
-//
-//	res := CheckDependency()
-//	if res != nil {
-//	}
-//
-// If res is not nil, pls check the related error with `Err()`:
-//
-//		if err := res.Err(); err != nil {
-//		    switch {
-//	        case errors.Is(err, ErrGoCmdNotFound):
-//	        case errors.Is(err, ErrGoModNotFound):
-//		    case errors.Is(err, ErrDependencyNotFound):
-//		    case errors.Is(err, ErrDependencyVersionNotSemantic):
-//		    case errors.Is(err, ErrDependencyReplacedWithLocalRepo):
-//		    case errors.Is(err, ErrDependencyVersionNotCompatible):
-//		    }
-//		}
-//
-// Then you can get the version in go.mod with `GoModVersion()` and retrieve the MinDepVersion
-// information with `MinDepVersion()`.
-func CheckDependency() *CheckResult {
-	return dm.CheckDependency()
-}
+func CheckDependency() *CheckResult { _ = "STUB: not implemented"; return nil }
 
-// DefaultCheckDependencyAndProcess provided default processing procedure to parse
-// CheckResult and prompt users
-func DefaultCheckDependencyAndProcess() error {
-	cr := CheckDependency()
-	if cr == nil {
-		return nil
-	}
-	res, shouldExit := defaultParseCheckResult(cr)
-	if res != "" {
-		log.Info(res)
-	}
-	if shouldExit {
-		return errors.New("kitex cmd tool dependency compatibility check failed")
-	}
-	return nil
-}
+func DefaultCheckDependencyAndProcess() error { _ = "STUB: not implemented"; return nil }
 
 func defaultParseCheckResult(cr *CheckResult) (prompt string, shouldExit bool) {
-	if cr == nil {
-		return
-	}
-	if err := cr.Err(); err != nil && (errors.Is(err, ErrDependencyVersionNotCompatible)) {
-		prompt = defaultPromptWithCheckResult(cr)
-		shouldExit = true
-	}
-
-	return
+	_ = "STUB: not implemented"
+	return "", false
 }
 
 var defaultPrompt = `# Kitex Cmd Tool %s is not compatible with %s %s in your go.mod
@@ -106,25 +34,11 @@ go get %s@%s
 # Or downgrade Kitex Cmd Tool to %s version
 go install github.com/cloudwego/kitex/tool/cmd/kitex@%s`
 
-func defaultPromptWithCheckResult(cr *CheckResult) string {
-	depVer := cr.MinDepVersion()
-	goModVer := cr.GoModVersion()
-	kitexName := "Kitex"
-	return fmt.Sprintf(defaultPrompt, kitex.Version, depVer.RefPath, goModVer,
-		kitexName,
-		depVer.RefPath,
-		kitexName, kitex.Version,
-		depVer.RefPath, kitex.Version,
-		goModVer,
-		goModVer,
-	)
-}
+func defaultPromptWithCheckResult(cr *CheckResult) string { _ = "STUB: not implemented"; return "" }
 
 type MinDepVersion struct {
-	// RefPath is the reference path to the dependency
-	// e.g. github.com/cloudwego/kitex
 	RefPath string
-	// Version is the minimal required version
+
 	Version string
 
 	ver      *version
@@ -150,34 +64,11 @@ func (m *MinDepVersion) init() error {
 	return nil
 }
 
-func (m *MinDepVersion) parseGoModVersion() error {
-	res, err := runGoListCmd(m.RefPath)
-	if err != nil {
-		return err
-	}
+func (m *MinDepVersion) parseGoModVersion() error { _ = "STUB: not implemented"; return nil }
 
-	verStr := parseGoListVersion(res)
-	// replace with local repository
-	if verStr == "" {
-		return ErrDependencyReplacedWithLocalRepo
-	}
+func (m *MinDepVersion) getGoModVersion() string { _ = "STUB: not implemented"; return "" }
 
-	ver, err := newVersion(verStr)
-	if err != nil {
-		return ErrDependencyVersionNotSemantic
-	}
-	m.goModVer = ver
-
-	return nil
-}
-
-func (m *MinDepVersion) getGoModVersion() string {
-	return m.goModVer.String()
-}
-
-func (m *MinDepVersion) isCompatible() bool {
-	return m.goModVer.greatOrEqual(m.ver)
-}
+func (m *MinDepVersion) isCompatible() bool { _ = "STUB: not implemented"; return false }
 
 var (
 	ErrGoCmdNotFound                   = errors.New("go cmd not found")
@@ -194,118 +85,32 @@ type CheckResult struct {
 	err      error
 }
 
-func (cr *CheckResult) MinDepVersion() *MinDepVersion {
-	return cr.ver
-}
+func (cr *CheckResult) MinDepVersion() *MinDepVersion { _ = "STUB: not implemented"; return nil }
 
-// Err returns the error in checking process
-func (cr *CheckResult) Err() error {
-	return cr.err
-}
+func (cr *CheckResult) Err() error { _ = "STUB: not implemented"; return nil }
 
-// GoModVersion returns the version of the dependency in the go.mod
-func (cr *CheckResult) GoModVersion() string {
-	return cr.goModVer
-}
+func (cr *CheckResult) GoModVersion() string { _ = "STUB: not implemented"; return "" }
 
 type dependencyManager struct {
 	depVer *MinDepVersion
 }
 
 func (dm *dependencyManager) Register(depVer *MinDepVersion) error {
-	if err := depVer.init(); err != nil {
-		return err
-	}
-	dm.depVer = depVer
-
+	_ = "STUB: not implemented"
 	return nil
 }
 
-func (dm *dependencyManager) CheckDependency() *CheckResult {
-	if dm.depVer == nil {
-		return nil
-	}
-	err := dm.depVer.parseGoModVersion()
-	return generateCheckResult(dm.depVer, err)
-}
+func (dm *dependencyManager) CheckDependency() *CheckResult { _ = "STUB: not implemented"; return nil }
 
-func runGoListCmd(refPath string) (string, error) {
-	res, err := runCommand("go list -m " + refPath)
-	if err != nil {
-		if errors.Is(err, exec.ErrNotFound) {
-			return "", ErrGoCmdNotFound
-		}
-		if strings.Contains(res, "go.mod file not found") {
-			return "", ErrGoModNotFound
-		}
-		return "", ErrDependencyNotFound
-	}
-	return res, nil
-}
+func runGoListCmd(refPath string) (string, error) { _ = "STUB: not implemented"; return "", nil }
 
-func runCommand(input string) (string, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-	arr := strings.Split(input, " ")
-	cmd := exec.CommandContext(ctx, arr[0], arr[1:]...)
-	output, err := cmd.CombinedOutput()
-	// return output even if err is not nil
-	// it can help the invoker to determine the specific scenario
-	return strings.TrimSpace(string(output)), err
-}
+func runCommand(input string) (string, error) { _ = "STUB: not implemented"; return "", nil }
 
 var goListVersionRegexp = regexp.MustCompile(`^(\S+)\s+(\S+)(\s+=>\s+)?(\S+)?(\s+)?(\S+)?$`)
 
-// parseGoToolVersion parses the version string returned by `go list -m {dependency}`
-// and returns the exact version of the dependency.
-// e.g.
-//
-//	verStr: "github.com/cloudwego/kitex v0.9.0"
-//	result: "v0.9.0"
-//	verStr: github.com/cloudwego/kitex v0.9.0 => github.com/cloudwego/kitex v0.9.1
-//	result: "v0.9.1"
-//	verStr: "github.com/cloudwego/kitex v0.9.0 => ./kitex"
-//	result: ""
-func parseGoListVersion(str string) string {
-	// e.g. github.com/cloudwego/kitex v0.9.0 => github.com/cloudwego/kitex v0.9.1
-	// parts[0]: "github.com/cloudwego/kitex v0.9.0 => github.com/cloudwego/kitex v0.9.1"
-	// parts[1]: "github.com/cloudwego/kitex"
-	// parts[2]: "v0.9.0"
-	// parts[3]: " => "
-	// parts[4]: "github.com/cloudwego/kitex"
-	// parts[5]: " "
-	// parts[6]: "v0.9.1"
-	parts := goListVersionRegexp.FindStringSubmatch(str)
-	if parts == nil {
-		return ""
-	}
-	// verify whether verStr is with replacement format
-	if parts[3] == "" {
-		return parts[2]
-	}
-	// verify whether replacing with local repository
-	// e.g. github.com/cloudwego/kitex v0.9.0 => ./kitex
-	// parts[6]: ""
-	if parts[6] != "" {
-		return parts[6]
-	}
-
-	return ""
-}
+func parseGoListVersion(str string) string { _ = "STUB: not implemented"; return "" }
 
 func generateCheckResult(depVer *MinDepVersion, err error) *CheckResult {
-	cr := &CheckResult{
-		ver: depVer,
-	}
-	if err != nil {
-		cr.err = err
-		return cr
-	}
-	cr.goModVer = depVer.getGoModVersion()
-
-	if !depVer.isCompatible() {
-		cr.err = ErrDependencyVersionNotCompatible
-	}
-
-	return cr
+	_ = "STUB: not implemented"
+	return nil
 }

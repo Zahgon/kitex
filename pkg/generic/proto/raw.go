@@ -1,19 +1,3 @@
-/*
- * Copyright 2025 CloudWeGo Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package proto
 
 import (
@@ -25,38 +9,26 @@ type RawReaderWriter struct {
 	*RawWriter
 }
 
-func NewRawReaderWriter() *RawReaderWriter {
-	return &RawReaderWriter{RawReader: NewRawReader(), RawWriter: NewRawWriter()}
-}
+func NewRawReaderWriter() *RawReaderWriter { _ = "STUB: not implemented"; return nil }
 
-// NewRawWriter build RawWriter
-func NewRawWriter() *RawWriter {
-	return &RawWriter{}
-}
+func NewRawWriter() *RawWriter { _ = "STUB: not implemented"; return nil }
 
-// RawWriter implement of MessageWriter
 type RawWriter struct{}
 
 var _ MessageWriter = (*RawWriter)(nil)
 
-// Write returns the copy of data
 func (m *RawWriter) Write(ctx context.Context, msg interface{}, method string, isClient bool) (interface{}, error) {
-	return msg, nil
+	_ = "STUB: not implemented"
+	return nil, nil
 }
 
-// NewRawReader build RawReader
-func NewRawReader() *RawReader {
-	return &RawReader{}
-}
+func NewRawReader() *RawReader { _ = "STUB: not implemented"; return nil }
 
-// RawReader implement of MessageReaderWithMethod
 type RawReader struct{}
 
 var _ MessageReader = (*RawReader)(nil)
 
-// Read returns the copy of data
 func (m *RawReader) Read(ctx context.Context, method string, isClient bool, actualMsgBuf []byte) (interface{}, error) {
-	copied := make([]byte, len(actualMsgBuf))
-	copy(copied, actualMsgBuf)
-	return copied, nil
+	_ = "STUB: not implemented"
+	return nil, nil
 }
