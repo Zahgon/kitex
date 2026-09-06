@@ -1,24 +1,7 @@
-/*
- * Copyright 2021 CloudWeGo Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package nphttp2
 
 import (
 	"context"
-	"errors"
 	"net"
 
 	"github.com/cloudwego/kitex/pkg/remote"
@@ -37,105 +20,66 @@ type serverStream struct {
 	rpcInfo rpcinfo.RPCInfo
 	conn    *serverConn
 	handler remote.TransReadWriter
-	// for grpc compatibility
+
 	grpcStream *grpcServerStream
 }
 
 var _ streaming.GRPCStreamGetter = (*serverStream)(nil)
 
 func (s *serverStream) GetGRPCStream() streaming.Stream {
-	return s.grpcStream
+	_ = "STUB: not implemented"
+	return *new(streaming.Stream)
 }
 
-// newServerStream ...
 func newServerStream(ctx context.Context, conn *serverConn, handler remote.TransReadWriter) *serverStream {
-	sx := &serverStream{
-		ctx:     ctx,
-		rpcInfo: rpcinfo.GetRPCInfo(ctx),
-		conn:    conn,
-		handler: handler,
-	}
-	sx.grpcStream = &grpcServerStream{
-		sx: sx,
-	}
-	return sx
+	_ = "STUB: not implemented"
+	return nil
 }
 
 func (s *grpcServerStream) Context() context.Context {
-	return s.sx.ctx
+	_ = "STUB: not implemented"
+	return *new(context.Context)
 }
 
 func (s *grpcServerStream) Trailer() metadata.MD {
-	panic("this method should only be used in client side!")
+	_ = "STUB: not implemented"
+	return *new(metadata.MD)
 }
 
 func (s *grpcServerStream) Header() (metadata.MD, error) {
-	panic("this method should only be used in client side!")
+	_ = "STUB: not implemented"
+	return *new(metadata.MD), nil
 }
 
-// SendHeader is used for server side grpcServerStream
-func (s *grpcServerStream) SendHeader(md metadata.MD) error {
-	return s.sx.conn.s.SendHeader(md)
-}
+func (s *grpcServerStream) SendHeader(md metadata.MD) error { _ = "STUB: not implemented"; return nil }
 
-// SetHeader is used for server side grpcServerStream
-func (s *grpcServerStream) SetHeader(md metadata.MD) error {
-	return s.sx.conn.s.SetHeader(md)
-}
+func (s *grpcServerStream) SetHeader(md metadata.MD) error { _ = "STUB: not implemented"; return nil }
 
-// SetTrailer is used for server side grpcServerStream
-func (s *grpcServerStream) SetTrailer(md metadata.MD) {
-	s.sx.conn.s.SetTrailer(md)
-}
+func (s *grpcServerStream) SetTrailer(md metadata.MD) { _ = "STUB: not implemented"; return }
 
-func (s *grpcServerStream) RecvMsg(m interface{}) error {
-	return s.sx.RecvMsg(s.sx.ctx, m)
-}
+func (s *grpcServerStream) RecvMsg(m interface{}) error { _ = "STUB: not implemented"; return nil }
 
-func (s *grpcServerStream) SendMsg(m interface{}) error {
-	return s.sx.SendMsg(s.sx.ctx, m)
-}
+func (s *grpcServerStream) SendMsg(m interface{}) error { _ = "STUB: not implemented"; return nil }
 
-func (s *grpcServerStream) Close() error {
-	return s.sx.conn.Close()
-}
+func (s *grpcServerStream) Close() error { _ = "STUB: not implemented"; return nil }
 
-func (s *serverStream) SetHeader(hd streaming.Header) error {
-	return s.conn.s.SetHeader(streamingHeaderToHTTP2MD(hd))
-}
+func (s *serverStream) SetHeader(hd streaming.Header) error { _ = "STUB: not implemented"; return nil }
 
-func (s *serverStream) SendHeader(hd streaming.Header) error {
-	return s.conn.s.SendHeader(streamingHeaderToHTTP2MD(hd))
-}
+func (s *serverStream) SendHeader(hd streaming.Header) error { _ = "STUB: not implemented"; return nil }
 
 func (s *serverStream) SetTrailer(tl streaming.Trailer) error {
-	return s.conn.s.SetTrailer(streamingTrailerToHTTP2MD(tl))
+	_ = "STUB: not implemented"
+	return nil
 }
 
-// RecvMsg receives a message from the client.
-// In order to avoid underlying execution errors when the context passed in by the user does not
-// contain information related to this RPC, the context specified when creating the stream is used
-// here, and the context passed in by the user is ignored.
 func (s *serverStream) RecvMsg(ctx context.Context, m interface{}) error {
-	ri := s.rpcInfo
-
-	msg := remote.NewMessage(m, ri, remote.Stream, remote.Server)
-	defer msg.Recycle()
-
-	_, err := s.handler.Read(s.ctx, s.conn, msg)
-	return err
+	_ = "STUB: not implemented"
+	return nil
 }
 
-// SendMsg sends a message to the client.
-// context handling logic is the same as RecvMsg.
 func (s *serverStream) SendMsg(ctx context.Context, m interface{}) error {
-	ri := s.rpcInfo
-
-	msg := remote.NewMessage(m, ri, remote.Stream, remote.Server)
-	defer msg.Recycle()
-
-	_, err := s.handler.Write(s.ctx, s.conn, msg)
-	return err
+	_ = "STUB: not implemented"
+	return nil
 }
 
 type grpcClientStream struct {
@@ -148,173 +92,101 @@ type clientStream struct {
 	svcInfo *serviceinfo.ServiceInfo
 	conn    *clientConn
 	handler remote.TransReadWriter
-	// for grpc compatibility
+
 	grpcStream *grpcClientStream
 }
 
 var _ streaming.GRPCStreamGetter = (*clientStream)(nil)
 
 func (s *clientStream) GetGRPCStream() streaming.Stream {
-	return s.grpcStream
+	_ = "STUB: not implemented"
+	return *new(streaming.Stream)
 }
 
-// NewClientStream ...
 func NewClientStream(ctx context.Context, svcInfo *serviceinfo.ServiceInfo, conn net.Conn, handler remote.TransReadWriter) streaming.ClientStream {
-	sx := &clientStream{
-		ctx:     ctx,
-		rpcInfo: rpcinfo.GetRPCInfo(ctx),
-		svcInfo: svcInfo,
-		handler: handler,
-	}
-	sx.conn, _ = conn.(*clientConn)
-	sx.grpcStream = &grpcClientStream{
-		sx: sx,
-	}
-	return sx
+	_ = "STUB: not implemented"
+	return *new(streaming.ClientStream)
 }
 
 func (s *grpcClientStream) Context() context.Context {
-	return s.sx.ctx
+	_ = "STUB: not implemented"
+	return *new(context.Context)
 }
 
-// Trailer is used for client side grpcServerStream
 func (s *grpcClientStream) Trailer() metadata.MD {
-	return s.sx.conn.s.Trailer()
+	_ = "STUB: not implemented"
+	return *new(metadata.MD)
 }
 
-// Header is used for client side grpcServerStream
 func (s *grpcClientStream) Header() (metadata.MD, error) {
-	return s.sx.conn.s.Header()
+	_ = "STUB: not implemented"
+	return *new(metadata.MD), nil
 }
 
-func (s *grpcClientStream) Close() error {
-	return s.sx.conn.Close()
-}
+func (s *grpcClientStream) Close() error { _ = "STUB: not implemented"; return nil }
 
-func (s *grpcClientStream) SendHeader(md metadata.MD) error {
-	panic("this method should only be used in server side!")
-}
+func (s *grpcClientStream) SendHeader(md metadata.MD) error { _ = "STUB: not implemented"; return nil }
 
-func (s *grpcClientStream) SetHeader(md metadata.MD) error {
-	panic("this method should only be used in server side!")
-}
+func (s *grpcClientStream) SetHeader(md metadata.MD) error { _ = "STUB: not implemented"; return nil }
 
-func (s *grpcClientStream) SetTrailer(md metadata.MD) {
-	panic("this method should only be used in server side!")
-}
+func (s *grpcClientStream) SetTrailer(md metadata.MD) { _ = "STUB: not implemented"; return }
 
-func (s *grpcClientStream) RecvMsg(m interface{}) error {
-	return s.sx.RecvMsg(s.sx.ctx, m)
-}
+func (s *grpcClientStream) RecvMsg(m interface{}) error { _ = "STUB: not implemented"; return nil }
 
-func (s *grpcClientStream) SendMsg(m interface{}) error {
-	return s.sx.SendMsg(s.sx.ctx, m)
-}
+func (s *grpcClientStream) SendMsg(m interface{}) error { _ = "STUB: not implemented"; return nil }
 
 func (s *clientStream) Header() (streaming.Header, error) {
-	hd, err := s.conn.Header()
-	if err != nil {
-		return nil, err
-	}
-	return http2MDToStreamingHeader(hd)
+	_ = "STUB: not implemented"
+	return *new(streaming.Header), nil
 }
 
 func (s *clientStream) Trailer() (streaming.Trailer, error) {
-	tl := s.conn.Trailer()
-	return http2MDToStreamingTrailer(tl)
+	_ = "STUB: not implemented"
+	return *new(streaming.Trailer), nil
 }
 
-// RecvMsg receives a message from the server.
-// context handling logic is the same as serverStream.RecvMsg.
 func (s *clientStream) RecvMsg(ctx context.Context, m interface{}) error {
-	ri := s.rpcInfo
-
-	msg := remote.NewMessage(m, ri, remote.Stream, remote.Client)
-	defer msg.Recycle()
-
-	_, err := s.handler.Read(s.ctx, s.conn, msg)
-	return err
+	_ = "STUB: not implemented"
+	return nil
 }
 
-// SendMsg sends a message to the server.
-// context handling logic is the same as serverStream.RecvMsg.
 func (s *clientStream) SendMsg(ctx context.Context, m interface{}) error {
-	ri := s.rpcInfo
-
-	msg := remote.NewMessage(m, ri, remote.Stream, remote.Client)
-	defer msg.Recycle()
-
-	_, err := s.handler.Write(s.ctx, s.conn, msg)
-	return err
+	_ = "STUB: not implemented"
+	return nil
 }
 
-func (s *clientStream) CloseSend(ctx context.Context) error {
-	return s.conn.Close()
-}
+func (s *clientStream) CloseSend(ctx context.Context) error { _ = "STUB: not implemented"; return nil }
 
 func (s *clientStream) Context() context.Context {
-	return s.ctx
+	_ = "STUB: not implemented"
+	return *new(context.Context)
 }
 
-func (s *clientStream) CancelWithErr(err error) {
-	s.conn.cancel(err)
-}
+func (s *clientStream) CancelWithErr(err error) { _ = "STUB: not implemented"; return }
 
 func streamingHeaderToHTTP2MD(header streaming.Header) metadata.MD {
-	md := metadata.MD{}
-	for k, v := range header {
-		md.Append(k, v)
-	}
-	return md
+	_ = "STUB: not implemented"
+	return *new(metadata.MD)
 }
 
 func streamingTrailerToHTTP2MD(trailer streaming.Trailer) metadata.MD {
-	md := metadata.MD{}
-	for k, v := range trailer {
-		md.Append(k, v)
-	}
-	return md
+	_ = "STUB: not implemented"
+	return *new(metadata.MD)
 }
 
 var handleStreamingMetadataMultipleValues func(k string, v []string) string
 
-// HandleStreamingMetadataMultipleValues is used to register a handler to handle the scene
-// when the value of the key is zero or more than one.
-// e.g.
-//
-//	nphttp2.HandleStreamingMetadataMultipleValues(func(k string, v []string) string {
-//		return v[0]
-//	})
 func HandleStreamingMetadataMultipleValues(hd func(k string, v []string) string) {
-	handleStreamingMetadataMultipleValues = hd
+	_ = "STUB: not implemented"
+	return
 }
 
 func http2MDToStreamingHeader(md metadata.MD) (streaming.Header, error) {
-	header := streaming.Header{}
-	for k, v := range md {
-		if len(v) > 1 || len(v) == 0 {
-			if handleStreamingMetadataMultipleValues != nil {
-				header[k] = handleStreamingMetadataMultipleValues(k, v)
-				continue
-			}
-			return nil, errors.New("cannot convert http2 metadata to streaming header, because the value of key " + k + " is zero or more than one")
-		}
-		header[k] = v[0]
-	}
-	return header, nil
+	_ = "STUB: not implemented"
+	return *new(streaming.Header), nil
 }
 
 func http2MDToStreamingTrailer(md metadata.MD) (streaming.Trailer, error) {
-	trailer := streaming.Trailer{}
-	for k, v := range md {
-		if len(v) > 1 || len(v) == 0 {
-			if handleStreamingMetadataMultipleValues != nil {
-				trailer[k] = handleStreamingMetadataMultipleValues(k, v)
-				continue
-			}
-			return nil, errors.New("cannot convert http2 metadata to streaming trailer, because the value of key " + k + " is zero or more than one")
-		}
-		trailer[k] = v[0]
-	}
-	return trailer, nil
+	_ = "STUB: not implemented"
+	return *new(streaming.Trailer), nil
 }

@@ -1,30 +1,10 @@
-/*
- * Copyright 2021 CloudWeGo Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package kerrors
 
 import (
 	"errors"
 	"fmt"
-	"io"
-	"os"
-	"strings"
 )
 
-// Basic error types
 var (
 	ErrInternalException  = &basicError{"internal exception"}
 	ErrServiceDiscovery   = &basicError{"service discovery error"}
@@ -42,18 +22,14 @@ var (
 	ErrBiz                = &basicError{"biz error"}
 
 	ErrRetry = &basicError{"retry error"}
-	// Deprecated: ErrRPCFinish was used to indicate that the result of this retry
-	// call should be discarded because another attempt has already received and
-	// started decoding the response.
-	// No longer needed since v0.15.0, but kept for backward compatibility.
+
 	ErrRPCFinish = &basicError{"rpc call finished"}
-	// ErrRoute happens when router fail to route this call
+
 	ErrRoute = &basicError{"rpc route failed"}
-	// ErrPayloadValidation happens when payload validation failed
+
 	ErrPayloadValidation = &basicError{"payload validation error"}
 )
 
-// More detailed error types
 var (
 	ErrNotSupported         = ErrInternalException.WithCause(errors.New("operation not supported"))
 	ErrNoResolver           = ErrInternalException.WithCause(errors.New("no resolver available"))
@@ -68,51 +44,32 @@ var (
 	ErrNoInstance           = ErrServiceDiscovery.WithCause(errors.New("no instance available"))
 )
 
-// ErrNonExistentMethod is used when the method is not found in a service info.
-func ErrNonExistentMethod(svcName, method string) error {
-	return ErrInternalException.WithCause(fmt.Errorf("non-existent method, service: %s, method: %s", svcName, method))
-}
+func ErrNonExistentMethod(svcName, method string) error { _ = "STUB: not implemented"; return nil }
 
-// ErrNotStreamingMethod is used when the method is not a streaming method in a service info.
-func ErrNotStreamingMethod(svcName, method string) error {
-	return ErrInternalException.WithCause(fmt.Errorf("not a streaming method, service: %s, method: %s", svcName, method))
-}
+func ErrNotStreamingMethod(svcName, method string) error { _ = "STUB: not implemented"; return nil }
 
-// ErrNotUnaryMethod is used when the method is not a unary method in a service info.
-func ErrNotUnaryMethod(svcName, method string) error {
-	return ErrInternalException.WithCause(fmt.Errorf("not a unary method, service: %s, method: %s", svcName, method))
-}
+func ErrNotUnaryMethod(svcName, method string) error { _ = "STUB: not implemented"; return nil }
 
 type basicError struct {
 	message string
 }
 
-// Error implements the error interface.
-func (be *basicError) Error() string {
-	return be.message
-}
+func (be *basicError) Error() string { _ = "STUB: not implemented"; return "" }
 
-// WithCause creates a detailed error which attach the given cause to current error.
-func (be *basicError) WithCause(cause error) error {
-	return &DetailedError{basic: be, cause: cause}
-}
+func (be *basicError) WithCause(cause error) error { _ = "STUB: not implemented"; return nil }
 
-// WithCauseAndStack creates a detailed error which attach the given cause to current error and wrap stack.
 func (be *basicError) WithCauseAndStack(cause error, stack string) error {
-	return &DetailedError{basic: be, cause: cause, stack: stack}
+	_ = "STUB: not implemented"
+	return nil
 }
 
-// WithCauseAndExtraMsg creates a detailed error which attach the given cause to current error and wrap extra msg to supply error msg.
 func (be *basicError) WithCauseAndExtraMsg(cause error, extraMsg string) error {
-	return &DetailedError{basic: be, cause: cause, extraMsg: extraMsg}
+	_ = "STUB: not implemented"
+	return nil
 }
 
-// Timeout supports the os.IsTimeout checking.
-func (be *basicError) Timeout() bool {
-	return be == ErrRPCTimeout
-}
+func (be *basicError) Timeout() bool { _ = "STUB: not implemented"; return false }
 
-// DetailedError contains more information.
 type DetailedError struct {
 	basic    *basicError
 	cause    error
@@ -120,104 +77,28 @@ type DetailedError struct {
 	extraMsg string
 }
 
-// Error implements the error interface.
-func (de *DetailedError) Error() string {
-	msg := appendErrMsg(de.basic.Error(), de.extraMsg)
-	if de.cause != nil {
-		return msg + ": " + de.cause.Error()
-	}
-	return msg
-}
+func (de *DetailedError) Error() string { _ = "STUB: not implemented"; return "" }
 
-// Format the error.
-func (de *DetailedError) Format(s fmt.State, verb rune) {
-	switch verb {
-	case 'v':
-		if s.Flag('+') {
-			msg := appendErrMsg(de.basic.Error(), de.extraMsg)
-			_, _ = io.WriteString(s, msg)
-			if de.cause != nil {
-				_, _ = fmt.Fprintf(s, ": %+v", de.cause)
-			}
-			return
-		}
-		fallthrough
-	case 's', 'q':
-		_, _ = io.WriteString(s, de.Error())
-	}
-}
+func (de *DetailedError) Format(s fmt.State, verb rune) { _ = "STUB: not implemented"; return }
 
-// ErrorType returns the basic error type.
-func (de *DetailedError) ErrorType() error {
-	return de.basic
-}
+func (de *DetailedError) ErrorType() error { _ = "STUB: not implemented"; return nil }
 
-// Unwrap returns the cause of detailed error.
-func (de *DetailedError) Unwrap() error {
-	return de.cause
-}
+func (de *DetailedError) Unwrap() error { _ = "STUB: not implemented"; return nil }
 
-// Is returns if the given error matches the current error.
-func (de *DetailedError) Is(target error) bool {
-	return de == target || de.basic == target || errors.Is(de.cause, target)
-}
+func (de *DetailedError) Is(target error) bool { _ = "STUB: not implemented"; return false }
 
-// As returns if the given target matches the current error, if so sets
-// target to the error value and returns true
-func (de *DetailedError) As(target interface{}) bool {
-	if errors.As(de.basic, target) {
-		return true
-	}
-	return errors.As(de.cause, target)
-}
+func (de *DetailedError) As(target interface{}) bool { _ = "STUB: not implemented"; return false }
 
-// Timeout supports the os.IsTimeout checking.
-func (de *DetailedError) Timeout() bool {
-	return de.basic == ErrRPCTimeout || os.IsTimeout(de.cause)
-}
+func (de *DetailedError) Timeout() bool { _ = "STUB: not implemented"; return false }
 
-// Stack record stack info
-func (de *DetailedError) Stack() string {
-	return de.stack
-}
+func (de *DetailedError) Stack() string { _ = "STUB: not implemented"; return "" }
 
-// WithExtraMsg to add extra msg to supply error msg
-func (de *DetailedError) WithExtraMsg(extraMsg string) {
-	de.extraMsg = extraMsg
-}
+func (de *DetailedError) WithExtraMsg(extraMsg string) { _ = "STUB: not implemented"; return }
 
-func appendErrMsg(errMsg, extra string) string {
-	if extra == "" {
-		return errMsg
-	}
-	var strBuilder strings.Builder
-	strBuilder.Grow(len(errMsg) + len(extra) + 2)
-	strBuilder.WriteString(errMsg)
-	strBuilder.WriteByte('[')
-	strBuilder.WriteString(extra)
-	strBuilder.WriteByte(']')
-	return strBuilder.String()
-}
+func appendErrMsg(errMsg, extra string) string { _ = "STUB: not implemented"; return "" }
 
-// IsKitexError reports whether the given err is an error generated by kitex.
-func IsKitexError(err error) bool {
-	if _, ok := err.(*basicError); ok {
-		return true
-	}
+func IsKitexError(err error) bool { _ = "STUB: not implemented"; return false }
 
-	if _, ok := err.(*DetailedError); ok {
-		return true
-	}
-	return false
-}
-
-// TimeoutCheckFunc is used to check whether the given err is a timeout error.
 var TimeoutCheckFunc func(err error) bool
 
-// IsTimeoutError check if the error is timeout
-func IsTimeoutError(err error) bool {
-	if TimeoutCheckFunc != nil {
-		return TimeoutCheckFunc(err)
-	}
-	return errors.Is(err, ErrRPCTimeout)
-}
+func IsTimeoutError(err error) bool { _ = "STUB: not implemented"; return false }

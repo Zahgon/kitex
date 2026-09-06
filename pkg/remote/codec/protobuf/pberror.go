@@ -1,24 +1,4 @@
-/*
- * Copyright 2021 CloudWeGo Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package protobuf
-
-import (
-	"google.golang.org/protobuf/proto"
-)
 
 type PBError interface {
 	error
@@ -32,34 +12,16 @@ type pbError struct {
 }
 
 func NewPbError(typeID int32, message string) PBError {
-	err := &ErrorProto{TypeID: typeID, Message: message}
-	return &pbError{errProto: err}
+	_ = "STUB: not implemented"
+	return *new(PBError)
 }
 
-func (p pbError) Error() string {
-	return p.errProto.Message
-}
+func (p pbError) Error() string { _ = "STUB: not implemented"; return "" }
 
-func (p *pbError) IsSetError() bool {
-	return p.errProto != nil
-}
+func (p *pbError) IsSetError() bool { _ = "STUB: not implemented"; return false }
 
-func (p *pbError) Marshal(out []byte) ([]byte, error) {
-	if !p.IsSetError() {
-		return out, nil
-	}
-	return proto.Marshal(p.errProto)
-}
+func (p *pbError) Marshal(out []byte) ([]byte, error) { _ = "STUB: not implemented"; return nil, nil }
 
-func (p *pbError) Unmarshal(in []byte) error {
-	err := new(ErrorProto)
-	if err := proto.Unmarshal(in, err); err != nil {
-		return err
-	}
-	p.errProto = err
-	return nil
-}
+func (p *pbError) Unmarshal(in []byte) error { _ = "STUB: not implemented"; return nil }
 
-func (p *pbError) TypeID() int32 {
-	return p.errProto.TypeID
-}
+func (p *pbError) TypeID() int32 { _ = "STUB: not implemented"; return 0 }

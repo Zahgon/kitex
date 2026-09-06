@@ -1,19 +1,3 @@
-/*
- * Copyright 2021 CloudWeGo Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package rpcinfo
 
 import (
@@ -38,133 +22,61 @@ func init() {
 	endpointPool.New = newEndpointInfo
 }
 
-func newEndpointInfo() interface{} {
-	return &endpointInfo{tags: make(map[string]string)}
-}
+func newEndpointInfo() interface{} { _ = "STUB: not implemented"; return nil }
 
-// ServiceName implements the EndpointInfo interface.
-func (ei *endpointInfo) ServiceName() string {
-	return ei.serviceName
-}
+func (ei *endpointInfo) ServiceName() string { _ = "STUB: not implemented"; return "" }
 
-// Method implements the EndpointInfo interface.
-func (ei *endpointInfo) Method() string {
-	return ei.method
-}
+func (ei *endpointInfo) Method() string { _ = "STUB: not implemented"; return "" }
 
-// Address implements the EndpointInfo interface.
-func (ei *endpointInfo) Address() net.Addr {
-	return ei.address
-}
+func (ei *endpointInfo) Address() net.Addr { _ = "STUB: not implemented"; return *new(net.Addr) }
 
-// Tag implements the EndpointInfo interface.
 func (ei *endpointInfo) Tag(key string) (value string, exist bool) {
-	value, exist = ei.tags[key]
+	_ = "STUB: not implemented"
+	return "", false
+}
+
+func (ei *endpointInfo) DefaultTag(key, def string) string { _ = "STUB: not implemented"; return "" }
+
+func (ei *endpointInfo) SetServiceName(serviceName string) error {
+	_ = "STUB: not implemented"
+	return nil
+}
+
+func (ei *endpointInfo) SetMethod(method string) error { _ = "STUB: not implemented"; return nil }
+
+func (ei *endpointInfo) SetAddress(addr net.Addr) error { _ = "STUB: not implemented"; return nil }
+
+func (ei *endpointInfo) SetTag(key, value string) error { _ = "STUB: not implemented"; return nil }
+
+func (ei *endpointInfo) ImmutableView() EndpointInfo {
+	_ = "STUB: not implemented"
+	return *new(EndpointInfo)
+}
+
+func (ei *endpointInfo) Reset() { _ = "STUB: not implemented"; return }
+
+func (ei *endpointInfo) ResetFromBasicInfo(bi *EndpointBasicInfo) {
+	_ = "STUB: not implemented"
 	return
 }
 
-// DefaultTag implements the EndpointInfo interface.
-func (ei *endpointInfo) DefaultTag(key, def string) string {
-	if value, exist := ei.tags[key]; exist && value != "" {
-		return value
-	}
-	return def
-}
+func (ei *endpointInfo) zero() { _ = "STUB: not implemented"; return }
 
-// SetServiceName implements the MutableEndpointInfo interface.
-func (ei *endpointInfo) SetServiceName(serviceName string) error {
-	ei.serviceName = serviceName
-	return nil
-}
+func (ei *endpointInfo) Recycle() { _ = "STUB: not implemented"; return }
 
-// SetMethod implements the MutableEndpointInfo interface.
-func (ei *endpointInfo) SetMethod(method string) error {
-	ei.method = method
-	return nil
-}
-
-// SetAddress implements the MutableEndpointInfo interface.
-func (ei *endpointInfo) SetAddress(addr net.Addr) error {
-	ei.address = addr
-	return nil
-}
-
-// SetTag implements the MutableEndpointInfo interface.
-func (ei *endpointInfo) SetTag(key, value string) error {
-	if ei.tags == nil {
-		ei.tags = make(map[string]string)
-	}
-	ei.tags[key] = value
-	return nil
-}
-
-// ImmutableView implements the MutableEndpointInfo interface.
-func (ei *endpointInfo) ImmutableView() EndpointInfo {
-	return ei
-}
-
-// Reset implements the MutableEndpointInfo interface.
-func (ei *endpointInfo) Reset() {
-	ei.zero()
-}
-
-// ResetFromBasicInfo implements the MutableEndpointInfo interface.
-func (ei *endpointInfo) ResetFromBasicInfo(bi *EndpointBasicInfo) {
-	ei.serviceName = bi.ServiceName
-	ei.method = bi.Method
-	ei.address = nil
-	for k := range ei.tags {
-		delete(ei.tags, k)
-	}
-	if ei.tags == nil && len(bi.Tags) > 0 {
-		ei.tags = make(map[string]string, len(bi.Tags))
-	}
-	for k, v := range bi.Tags {
-		ei.tags[k] = v
-	}
-}
-
-func (ei *endpointInfo) zero() {
-	ei.serviceName = ""
-	ei.method = ""
-	ei.address = nil
-	for k := range ei.tags {
-		delete(ei.tags, k)
-	}
-}
-
-// Recycle is used to recycle the endpointInfo.
-func (ei *endpointInfo) Recycle() {
-	ei.zero()
-	endpointPool.Put(ei)
-}
-
-// NewMutableEndpointInfo creates a new MutableEndpointInfo with the given information.
 func NewMutableEndpointInfo(serviceName, method string, address net.Addr, tags map[string]string) MutableEndpointInfo {
-	ei := endpointPool.Get().(*endpointInfo)
-	ei.serviceName = serviceName
-	ei.method = method
-	ei.address = address
-	if ei.tags == nil && len(tags) > 0 {
-		ei.tags = make(map[string]string, len(tags))
-	}
-	for k, v := range tags {
-		ei.tags[k] = v
-	}
-	return ei
+	_ = "STUB: not implemented"
+	return *new(MutableEndpointInfo)
 }
 
-// NewEndpointInfo creates an immutable EndpointInfo with the given information.
 func NewEndpointInfo(serviceName, method string, address net.Addr, tags map[string]string) EndpointInfo {
-	return NewMutableEndpointInfo(serviceName, method, address, tags).ImmutableView()
+	_ = "STUB: not implemented"
+	return *new(EndpointInfo)
 }
 
-// FromBasicInfo converts an EndpointBasicInfo into EndpointInfo.
 func FromBasicInfo(bi *EndpointBasicInfo) EndpointInfo {
-	return NewEndpointInfo(bi.ServiceName, bi.Method, nil, bi.Tags)
+	_ = "STUB: not implemented"
+	return *new(EndpointInfo)
 }
 
-// EmptyEndpointInfo creates an empty EndpointInfo.
-func EmptyEndpointInfo() EndpointInfo {
-	return NewEndpointInfo("", "", nil, nil)
-}
+func EmptyEndpointInfo() EndpointInfo { _ = "STUB: not implemented"; return *new(EndpointInfo) }

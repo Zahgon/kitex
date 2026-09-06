@@ -1,19 +1,3 @@
-/*
- * Copyright 2023 CloudWeGo Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package streamclient
 
 import (
@@ -32,97 +16,47 @@ import (
 	"github.com/cloudwego/kitex/pkg/xds"
 )
 
-// NOTICE: These options are used to inject relevant option configurations into the streaming
-// clients that are not based on streamx. After the streamx feature is enabled, you can reuse the apis
-// in the client package. Therefore, all apis here will be marked as deprecated.
-// For enabling the streamx feature, please refer to https://www.cloudwego.io/docs/kitex/tutorials/basic-feature/streamx/.
+func WithSuite(suite client.Suite) Option { _ = "STUB: not implemented"; return *new(Option) }
 
-// Deprecated: Use client.WithSuite instead, this requires enabling the streamx feature.
-func WithSuite(suite client.Suite) Option {
-	return ConvertOptionFrom(client.WithSuite(suite))
-}
+func WithMiddleware(mw endpoint.Middleware) Option { _ = "STUB: not implemented"; return *new(Option) }
 
-// Deprecated: Use client.WithMiddleware instead, this requires enabling the streamx feature.
-func WithMiddleware(mw endpoint.Middleware) Option {
-	return ConvertOptionFrom(client.WithMiddleware(mw))
-}
-
-// Deprecated: Use client.WithMiddlewareBuilder instead, this requires enabling the streamx feature.
 func WithMiddlewareBuilder(mwb endpoint.MiddlewareBuilder) Option {
-	return ConvertOptionFrom(client.WithMiddlewareBuilder(mwb))
+	_ = "STUB: not implemented"
+	return *new(Option)
 }
 
-// Deprecated: Use client.WithInstanceMW instead, this requires enabling the streamx feature.
-func WithInstanceMW(mw endpoint.Middleware) Option {
-	return ConvertOptionFrom(client.WithInstanceMW(mw))
-}
+func WithInstanceMW(mw endpoint.Middleware) Option { _ = "STUB: not implemented"; return *new(Option) }
 
-// Deprecated: Use client.WithDestService instead, this requires enabling the streamx feature.
-func WithDestService(svr string) Option {
-	return ConvertOptionFrom(client.WithDestService(svr))
-}
+func WithDestService(svr string) Option { _ = "STUB: not implemented"; return *new(Option) }
 
-// Deprecated: Use client.WithHostPorts instead, this requires enabling the streamx feature.
-func WithHostPorts(hostPorts ...string) Option {
-	return ConvertOptionFrom(client.WithHostPorts(hostPorts...))
-}
+func WithHostPorts(hostPorts ...string) Option { _ = "STUB: not implemented"; return *new(Option) }
 
-// Deprecated: Use client.WithResolver instead, this requires enabling the streamx feature.
-func WithResolver(r discovery.Resolver) Option {
-	return ConvertOptionFrom(client.WithResolver(r))
-}
+func WithResolver(r discovery.Resolver) Option { _ = "STUB: not implemented"; return *new(Option) }
 
-// Deprecated: Use client.WithHTTPResolver instead, this requires enabling the streamx feature.
-func WithHTTPResolver(r http.Resolver) Option {
-	return ConvertOptionFrom(client.WithHTTPResolver(r))
-}
+func WithHTTPResolver(r http.Resolver) Option { _ = "STUB: not implemented"; return *new(Option) }
 
-// Deprecated: Use client.WithLoadBalancer instead, this requires enabling the streamx feature.
 func WithLoadBalancer(lb loadbalance.Loadbalancer, opts ...*lbcache.Options) Option {
-	return ConvertOptionFrom(client.WithLoadBalancer(lb, opts...))
+	_ = "STUB: not implemented"
+	return *new(Option)
 }
 
-// Deprecated: Use client.WithConnectTimeout instead, this requires enabling the streamx feature.
-func WithConnectTimeout(d time.Duration) Option {
-	return ConvertOptionFrom(client.WithConnectTimeout(d))
-}
+func WithConnectTimeout(d time.Duration) Option { _ = "STUB: not implemented"; return *new(Option) }
 
-// Deprecated: Use client.WithTag instead, this requires enabling the streamx feature.
-func WithTag(key, val string) Option {
-	return ConvertOptionFrom(client.WithTag(key, val))
-}
+func WithTag(key, val string) Option { _ = "STUB: not implemented"; return *new(Option) }
 
-// Deprecated: Use client.WithTracer instead, this requires enabling the streamx feature.
-func WithTracer(c stats.Tracer) Option {
-	return ConvertOptionFrom(client.WithTracer(c))
-}
+func WithTracer(c stats.Tracer) Option { _ = "STUB: not implemented"; return *new(Option) }
 
-// Deprecated: Use client.WithStatsLevel instead, this requires enabling the streamx feature.
-func WithStatsLevel(level stats.Level) Option {
-	return ConvertOptionFrom(client.WithStatsLevel(level))
-}
+func WithStatsLevel(level stats.Level) Option { _ = "STUB: not implemented"; return *new(Option) }
 
-// Deprecated: Use client.WithPayloadCodec instead, this requires enabling the streamx feature.
-func WithPayloadCodec(c remote.PayloadCodec) Option {
-	return ConvertOptionFrom(client.WithPayloadCodec(c))
-}
+func WithPayloadCodec(c remote.PayloadCodec) Option { _ = "STUB: not implemented"; return *new(Option) }
 
-// Deprecated: Use client.WithConnReporterEnabled instead, this requires enabling the streamx feature.
-func WithConnReporterEnabled() Option {
-	return ConvertOptionFrom(client.WithConnReporterEnabled())
-}
+func WithConnReporterEnabled() Option { _ = "STUB: not implemented"; return *new(Option) }
 
-// Deprecated: Use client.WithWarmingUp instead, this requires enabling the streamx feature.
-func WithWarmingUp(wuo *warmup.ClientOption) Option {
-	return ConvertOptionFrom(client.WithWarmingUp(wuo))
-}
+func WithWarmingUp(wuo *warmup.ClientOption) Option { _ = "STUB: not implemented"; return *new(Option) }
 
-// Deprecated: Use client.WithXDSSuite instead, this requires enabling the streamx feature.
-func WithXDSSuite(suite xds.ClientSuite) Option {
-	return ConvertOptionFrom(client.WithXDSSuite(suite))
-}
+func WithXDSSuite(suite xds.ClientSuite) Option { _ = "STUB: not implemented"; return *new(Option) }
 
-// Deprecated: Use client.WithContextBackup instead, this requires enabling the streamx feature.
 func WithContextBackup(backupHandler func(prev, cur context.Context) (ctx context.Context, backup bool)) Option {
-	return ConvertOptionFrom(client.WithContextBackup(backupHandler))
+	_ = "STUB: not implemented"
+	return *new(Option)
 }

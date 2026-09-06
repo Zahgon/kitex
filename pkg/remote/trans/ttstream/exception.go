@@ -1,25 +1,6 @@
-/*
- * Copyright 2024 CloudWeGo Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package ttstream
 
 import (
-	"errors"
-	"fmt"
-	"strings"
 	"time"
 
 	"github.com/cloudwego/kitex/pkg/kerrors"
@@ -47,21 +28,13 @@ var (
 var errServerSideBizHandlerReturnCancel = errBizHandlerReturnCancel.newBuilder().withSide(serverSide)
 
 func newStreamRecvTimeoutException(cfg streaming.TimeoutConfig) *Exception {
-	res := newException(fmt.Sprintf("stream Recv timeout, timeout config=%+v", cfg), kerrors.ErrStreamingTimeout, 12014).withSide(clientSide)
-	if cfg.DisableCancelRemote {
-		res = res.withCanRetry()
-	}
-	return res
+	_ = "STUB: not implemented"
+	return nil
 }
 
 var notSetStreamTimeout = time.Duration(-1)
 
-func newStreamTimeoutException(tm time.Duration) *Exception {
-	if tm >= 0 {
-		return newException(fmt.Sprintf("stream timeout, timeout in ctx: %+v", tm), kerrors.ErrStreamingTimeout, 12015).withSide(clientSide)
-	}
-	return newException("stream timeout, no explicit timeout set in stream ctx", kerrors.ErrStreamingTimeout, 12015).withSide(clientSide)
-}
+func newStreamTimeoutException(tm time.Duration) *Exception { _ = "STUB: not implemented"; return nil }
 
 const (
 	setSide = 1 << iota
@@ -71,17 +44,14 @@ const (
 )
 
 type Exception struct {
-	// basic information, align with thrift ApplicationException
 	message string
 	typeId  int32
 
-	// extended information, for better troubleshooting experience
 	side       sideType
 	cancelPath string
 
-	// error hierarchy
 	parent error
-	// when cause is set, replace message to cause.Error() when displaying error information
+
 	cause error
 
 	canRetry bool
@@ -90,131 +60,46 @@ type Exception struct {
 }
 
 func newException(message string, parent error, typeId int32) *Exception {
-	return &Exception{message: message, parent: parent, typeId: typeId}
+	_ = "STUB: not implemented"
+	return nil
 }
 
-// newBuilder shallow-copy a new Exception.
-// this func should be invoked before building a new Exception from pre-defined Exceptions
-func (e *Exception) newBuilder() *Exception {
-	newEx := *e
-	return &newEx
-}
+func (e *Exception) newBuilder() *Exception { _ = "STUB: not implemented"; return nil }
 
-func (e *Exception) Error() string {
-	var strBuilder strings.Builder
-	strBuilder.WriteString(fmt.Sprintf("[ttstream error, code=%d] ", e.typeId))
+func (e *Exception) Error() string { _ = "STUB: not implemented"; return "" }
 
-	if e.isSideSet() {
-		switch e.side {
-		case clientSide:
-			strBuilder.WriteString("[client-side stream] ")
-		case serverSide:
-			strBuilder.WriteString("[server-side stream] ")
-		}
-	}
-
-	if e.isCancelPathSet() {
-		strBuilder.WriteString("[canceled path: ")
-		strBuilder.WriteString(formatCancelPath(e.cancelPath))
-		strBuilder.WriteString("] ")
-	}
-
-	if e.isCauseSet() {
-		strBuilder.WriteString(e.cause.Error())
-	} else {
-		strBuilder.WriteString(e.message)
-	}
-
-	return strBuilder.String()
-}
-
-func (e *Exception) withCause(cause error) *Exception {
-	if cause != nil {
-		e.cause = cause
-		e.bitSet |= setCause
-	}
-	return e
-}
+func (e *Exception) withCause(cause error) *Exception { _ = "STUB: not implemented"; return nil }
 
 func (e *Exception) withCauseAndTypeId(cause error, typeId int32) *Exception {
-	e.cause = cause
-	e.typeId = typeId
-	e.bitSet |= setCause
-	return e
+	_ = "STUB: not implemented"
+	return nil
 }
 
-func (e *Exception) isCauseSet() bool {
-	return e.bitSet&setCause != 0
-}
+func (e *Exception) isCauseSet() bool { _ = "STUB: not implemented"; return false }
 
-func (e *Exception) withSide(side sideType) *Exception {
-	e.side = side
-	e.bitSet |= setSide
-	return e
-}
+func (e *Exception) withSide(side sideType) *Exception { _ = "STUB: not implemented"; return nil }
 
-func (e *Exception) isSideSet() bool {
-	return e.bitSet&setSide != 0
-}
+func (e *Exception) isSideSet() bool { _ = "STUB: not implemented"; return false }
 
 func (e *Exception) setOrAppendCancelPath(cancelPath string) *Exception {
-	e.cancelPath = appendCancelPath(e.cancelPath, cancelPath)
-	e.bitSet |= setCancelPath
-	return e
+	_ = "STUB: not implemented"
+	return nil
 }
 
-func (e *Exception) isCancelPathSet() bool {
-	return e.bitSet&setCancelPath != 0
-}
+func (e *Exception) isCancelPathSet() bool { _ = "STUB: not implemented"; return false }
 
-func (e *Exception) withCanRetry() *Exception {
-	e.canRetry = true
-	e.bitSet |= setCanRetry
-	return e
-}
+func (e *Exception) withCanRetry() *Exception { _ = "STUB: not implemented"; return nil }
 
-func (e *Exception) isCanRetrySet() bool {
-	return e.bitSet&setCanRetry != 0
-}
+func (e *Exception) isCanRetrySet() bool { _ = "STUB: not implemented"; return false }
 
-func (e *Exception) Is(target error) bool {
-	if rawEx, ok := target.(*Exception); ok {
-		return rawEx.message == e.message
-	}
-	return target == e || errors.Is(e.parent, target) || errors.Is(e.cause, target)
-}
+func (e *Exception) Is(target error) bool { _ = "STUB: not implemented"; return false }
 
-func (e *Exception) getMessage() string {
-	if e.isCauseSet() {
-		return e.cause.Error()
-	}
-	return e.message
-}
+func (e *Exception) getMessage() string { _ = "STUB: not implemented"; return "" }
 
-func (e *Exception) TypeId() int32 {
-	return e.typeId
-}
+func (e *Exception) TypeId() int32 { _ = "STUB: not implemented"; return 0 }
 
-// appendCancelPath is a common util func to process cancelPath metadata in Rst Frame and Exception
-func appendCancelPath(oriCp, node string) string {
-	if len(oriCp) > 0 {
-		return strings.Join([]string{oriCp, node}, ",")
-	}
-	return node
-}
+func appendCancelPath(oriCp, node string) string { _ = "STUB: not implemented"; return "" }
 
-func formatCancelPath(cancelPath string) string {
-	if cancelPath == "" {
-		return cancelPath
-	}
-	parts := strings.Split(cancelPath, ",")
-	return strings.Join(parts, " -> ")
-}
+func formatCancelPath(cancelPath string) string { _ = "STUB: not implemented"; return "" }
 
-func checkCanRetry(err error) bool {
-	ex, ok := err.(*Exception)
-	if !ok {
-		return false
-	}
-	return ex.isCanRetrySet()
-}
+func checkCanRetry(err error) bool { _ = "STUB: not implemented"; return false }

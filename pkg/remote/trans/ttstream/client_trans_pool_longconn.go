@@ -1,19 +1,3 @@
-/*
- * Copyright 2024 CloudWeGo Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package ttstream
 
 import (
@@ -31,13 +15,8 @@ type LongConnConfig struct {
 }
 
 func newLongConnTransPool(config LongConnConfig) transPool {
-	tp := new(longConnTransPool)
-	tp.config = DefaultLongConnConfig
-	if config.MaxIdleTimeout > 0 {
-		tp.config.MaxIdleTimeout = config.MaxIdleTimeout
-	}
-	tp.transPool = container.NewObjectPool(tp.config.MaxIdleTimeout)
-	return tp
+	_ = "STUB: not implemented"
+	return *new(transPool)
 }
 
 type longConnTransPool struct {
@@ -46,28 +25,8 @@ type longConnTransPool struct {
 }
 
 func (c *longConnTransPool) Get(network, addr string) (trans *clientTransport, err error) {
-	for {
-		o := c.transPool.Pop(addr)
-		if o == nil {
-			break
-		}
-		trans = o.(*clientTransport)
-		if trans.IsActive() {
-			return trans, nil
-		}
-	}
-
-	// create new connection
-	conn, err := dialer.DialConnection(network, addr, time.Second)
-	if err != nil {
-		return nil, err
-	}
-	trans = newClientTransport(conn, c)
-	// create new transport
-	return trans, nil
+	_ = "STUB: not implemented"
+	return nil, nil
 }
 
-func (c *longConnTransPool) Put(trans *clientTransport) {
-	addr := trans.conn.RemoteAddr().String()
-	c.transPool.Push(addr, trans)
-}
+func (c *longConnTransPool) Put(trans *clientTransport) { _ = "STUB: not implemented"; return }

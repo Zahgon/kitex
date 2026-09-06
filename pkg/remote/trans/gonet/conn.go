@@ -1,25 +1,8 @@
-/*
- * Copyright 2025 CloudWeGo Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package gonet
 
 import (
 	"errors"
 	"net"
-	"sync/atomic"
 
 	"github.com/cloudwego/gopkg/bufiox"
 )
@@ -35,75 +18,36 @@ type bufioxReadWriter interface {
 	Writer() *bufiox.DefaultWriter
 }
 
-// cliConn implements the net.Conn interface.
-// FIXME: add proactive state check of long connection
 type cliConn struct {
 	net.Conn
 	r      *bufiox.DefaultReader
 	w      *bufiox.DefaultWriter
-	closed uint32 // 1: closed
+	closed uint32
 }
 
-func newCliConn(conn net.Conn) *cliConn {
-	return &cliConn{
-		Conn: conn,
-		r:    bufiox.NewDefaultReader(conn),
-		w:    bufiox.NewDefaultWriter(conn),
-	}
-}
+func newCliConn(conn net.Conn) *cliConn { _ = "STUB: not implemented"; return nil }
 
-func (c *cliConn) Reader() *bufiox.DefaultReader {
-	return c.r
-}
+func (c *cliConn) Reader() *bufiox.DefaultReader { _ = "STUB: not implemented"; return nil }
 
-func (c *cliConn) Writer() *bufiox.DefaultWriter {
-	return c.w
-}
+func (c *cliConn) Writer() *bufiox.DefaultWriter { _ = "STUB: not implemented"; return nil }
 
-func (c *cliConn) Read(b []byte) (int, error) {
-	return c.r.Read(b)
-}
+func (c *cliConn) Read(b []byte) (int, error) { _ = "STUB: not implemented"; return 0, nil }
 
-func (c *cliConn) Close() error {
-	if atomic.CompareAndSwapUint32(&c.closed, 0, 1) {
-		c.r.Release(nil)
-		return c.Conn.Close()
-	}
-	return errConnClosed
-}
+func (c *cliConn) Close() error { _ = "STUB: not implemented"; return nil }
 
-// svrConn implements the net.Conn interface.
 type svrConn struct {
 	net.Conn
 	r      *bufiox.DefaultReader
 	w      *bufiox.DefaultWriter
-	closed uint32 // 1: closed
+	closed uint32
 }
 
-func newSvrConn(conn net.Conn) *svrConn {
-	return &svrConn{
-		Conn: conn,
-		r:    bufiox.NewDefaultReader(conn),
-		w:    bufiox.NewDefaultWriter(conn),
-	}
-}
+func newSvrConn(conn net.Conn) *svrConn { _ = "STUB: not implemented"; return nil }
 
-func (bc *svrConn) Read(b []byte) (int, error) {
-	return bc.r.Read(b)
-}
+func (bc *svrConn) Read(b []byte) (int, error) { _ = "STUB: not implemented"; return 0, nil }
 
-func (bc *svrConn) Close() error {
-	if atomic.CompareAndSwapUint32(&bc.closed, 0, 1) {
-		bc.r.Release(nil)
-		return bc.Conn.Close()
-	}
-	return errConnClosed
-}
+func (bc *svrConn) Close() error { _ = "STUB: not implemented"; return nil }
 
-func (bc *svrConn) Reader() *bufiox.DefaultReader {
-	return bc.r
-}
+func (bc *svrConn) Reader() *bufiox.DefaultReader { _ = "STUB: not implemented"; return nil }
 
-func (bc *svrConn) Writer() *bufiox.DefaultWriter {
-	return bc.w
-}
+func (bc *svrConn) Writer() *bufiox.DefaultWriter { _ = "STUB: not implemented"; return nil }

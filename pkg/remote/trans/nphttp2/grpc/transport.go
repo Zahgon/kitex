@@ -1,26 +1,3 @@
-/*
- *
- * Copyright 2014 gRPC authors.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- * This file may have been modified by CloudWeGo authors. All CloudWeGo
- * Modifications are Copyright 2021 CloudWeGo Authors.
- */
-
-// Package grpc defines and implements message oriented communication
-// channel to complete various transactions (e.g., an RPC).  It is meant for
-// grpc-internal usage and is not intended to be imported directly by users.
 package grpc
 
 import (
@@ -28,7 +5,6 @@ import (
 	"context"
 	"crypto/tls"
 	"errors"
-	"fmt"
 	"io"
 	"net"
 	"sync"
@@ -45,40 +21,18 @@ type bufferPool struct {
 	pool sync.Pool
 }
 
-func newBufferPool() *bufferPool {
-	return &bufferPool{
-		pool: sync.Pool{
-			New: func() interface{} {
-				return new(bytes.Buffer)
-			},
-		},
-	}
-}
+func newBufferPool() *bufferPool { _ = "STUB: not implemented"; return nil }
 
-func (p *bufferPool) get() *bytes.Buffer {
-	return p.pool.Get().(*bytes.Buffer)
-}
+func (p *bufferPool) get() *bytes.Buffer { _ = "STUB: not implemented"; return nil }
 
-func (p *bufferPool) put(b *bytes.Buffer) {
-	p.pool.Put(b)
-}
+func (p *bufferPool) put(b *bytes.Buffer) { _ = "STUB: not implemented"; return }
 
-// recvMsg represents the received msg from the transport. All transport
-// protocol specific info has been removed.
 type recvMsg struct {
 	buffer *bytes.Buffer
-	// nil: received some data
-	// io.EOF: stream is completed. data is nil.
-	// other non-nil error: transport failure. data is nil.
+
 	err error
 }
 
-// recvBuffer is an unbounded channel of recvMsg structs.
-//
-// Note: recvBuffer differs from buffer.Unbounded only in the fact that it
-// holds a channel of recvMsg structs instead of objects implementing "item"
-// interface. recvBuffer is written to much more often and using strict recvMsg
-// structs helps avoid allocation in "recvBuffer.put"
 type recvBuffer struct {
 	c       chan recvMsg
 	mu      sync.Mutex
@@ -86,161 +40,62 @@ type recvBuffer struct {
 	err     error
 }
 
-func newRecvBuffer() *recvBuffer {
-	b := &recvBuffer{
-		c: make(chan recvMsg, 1),
-	}
-	return b
-}
+func newRecvBuffer() *recvBuffer { _ = "STUB: not implemented"; return nil }
 
-func (b *recvBuffer) put(r recvMsg) {
-	b.mu.Lock()
-	if b.err != nil {
-		b.mu.Unlock()
-		// An error had occurred earlier, don't accept more
-		// data or errors.
-		return
-	}
-	b.err = r.err
-	if len(b.backlog) == 0 {
-		select {
-		case b.c <- r:
-			b.mu.Unlock()
-			return
-		default:
-		}
-	}
-	b.backlog = append(b.backlog, r)
-	b.mu.Unlock()
-}
+func (b *recvBuffer) put(r recvMsg) { _ = "STUB: not implemented"; return }
 
-func (b *recvBuffer) load() {
-	b.mu.Lock()
-	if len(b.backlog) > 0 {
-		select {
-		case b.c <- b.backlog[0]:
-			b.backlog[0] = recvMsg{}
-			b.backlog = b.backlog[1:]
-		default:
-		}
-	}
-	b.mu.Unlock()
-}
+func (b *recvBuffer) load() { _ = "STUB: not implemented"; return }
 
-// get returns the channel that receives a recvMsg in the buffer.
-//
-// Upon receipt of a recvMsg, the caller should call load to send another
-// recvMsg onto the channel if there is any.
-func (b *recvBuffer) get() <-chan recvMsg {
-	return b.c
-}
+func (b *recvBuffer) get() <-chan recvMsg { _ = "STUB: not implemented"; return nil }
 
-// recvBufferReader implements io.Reader interface to read the data from
-// recvBuffer.
 type recvBufferReader struct {
-	closeStream func(error) // Closes the client transport stream with the given error and nil trailer metadata.
+	closeStream func(error)
 	ctx         context.Context
-	ctxDone     <-chan struct{} // cache of ctx.Done() (for performance).
+	ctxDone     <-chan struct{}
 	recv        *recvBuffer
-	last        *bytes.Buffer // Stores the remaining data in the previous calls.
+	last        *bytes.Buffer
 	err         error
 	freeBuffer  func(*bytes.Buffer)
 }
 
-// Read reads the next len(p) bytes from last. If last is drained, it tries to
-// read additional data from recv. It blocks if there no additional data available
-// in recv. If Read returns any non-nil error, it will continue to return that error.
 func (r *recvBufferReader) Read(p []byte) (n int, err error) {
-	if r.err != nil {
-		return 0, r.err
-	}
-	if r.last != nil {
-		// Read remaining data left in last call.
-		copied, _ := r.last.Read(p)
-		if r.last.Len() == 0 {
-			r.freeBuffer(r.last)
-			r.last = nil
-		}
-		return copied, nil
-	}
-	if r.closeStream != nil {
-		n, r.err = r.readClient(p)
-	} else {
-		n, r.err = r.read(p)
-	}
-	return n, r.err
+	_ = "STUB: not implemented"
+	return 0, nil
 }
 
 func (r *recvBufferReader) read(p []byte) (n int, err error) {
-	select {
-	case <-r.ctxDone:
-		return 0, ContextErr(r.ctx.Err())
-	case m := <-r.recv.get():
-		return r.readAdditional(m, p)
-	}
+	_ = "STUB: not implemented"
+	return 0, nil
 }
 
 func (r *recvBufferReader) readClient(p []byte) (n int, err error) {
-	// If the context is canceled, then closes the stream with nil metadata.
-	// closeStream writes its error parameter to r.recv as a recvMsg.
-	// r.readAdditional acts on that message and returns the necessary error.
-	select {
-	case <-r.ctxDone:
-		// Note that this adds the ctx error to the end of recv buffer, and
-		// reads from the head. This will delay the error until recv buffer is
-		// empty, thus will delay ctx cancellation in Recv().
-		//
-		// It's done this way to fix a race between ctx cancel and trailer. The
-		// race was, stream.Recv() may return ctx error if ctxDone wins the
-		// race, but stream.Trailer() may return a non-nil md because the stream
-		// was not marked as done when trailer is received. This closeStream
-		// call will mark stream as done, thus fix the race.
-		//
-		// TODO: delaying ctx error seems like a unnecessary side effect. What
-		// we really want is to mark the stream as done, and return ctx error
-		// faster.
-		r.closeStream(cascadeContextErr(r.ctx.Err()))
-		m := <-r.recv.get()
-		return r.readAdditional(m, p)
-	case m := <-r.recv.get():
-		return r.readAdditional(m, p)
-	}
+	_ = "STUB: not implemented"
+	return 0, nil
 }
 
 func (r *recvBufferReader) readAdditional(m recvMsg, p []byte) (n int, err error) {
-	r.recv.load()
-	if m.err != nil {
-		return 0, m.err
-	}
-	copied, _ := m.buffer.Read(p)
-	if m.buffer.Len() == 0 {
-		r.freeBuffer(m.buffer)
-		r.last = nil
-	} else {
-		r.last = m.buffer
-	}
-	return copied, nil
+	_ = "STUB: not implemented"
+	return 0, nil
 }
 
 type streamState uint32
 
 const (
-	streamActive    streamState = iota
-	streamWriteDone             // EndStream sent
-	streamReadDone              // EndStream received
-	streamDone                  // the entire stream is finished.
+	streamActive streamState = iota
+	streamWriteDone
+	streamReadDone
+	streamDone
 )
 
-// Stream represents an RPC in the transport layer.
 type Stream struct {
 	id           uint32
-	st           ServerTransport  // nil for client side Stream
-	ct           *http2Client     // nil for server side Stream
-	ctx          context.Context  // the associated context of the stream
-	cancel       cancelWithReason // always nil for client side Stream
-	done         chan struct{}    // closed at the end of stream to unblock writers. On the client side.
-	ctxDone      <-chan struct{}  // same as done chan but for server side. Cache of ctx.Done() (for performance)
-	method       string           // the associated RPC method of the stream
+	st           ServerTransport
+	ct           *http2Client
+	ctx          context.Context
+	cancel       cancelWithReason
+	done         chan struct{}
+	ctxDone      <-chan struct{}
+	method       string
 	recvCompress string
 	sendCompress string
 	buf          *recvBuffer
@@ -248,358 +103,135 @@ type Stream struct {
 	fc           *inFlow
 	wq           *writeQuota
 
-	// Callback to state application's intentions to read data. This
-	// is used to adjust flow control, if needed.
 	requestRead func(int)
 
-	headerChan       chan struct{} // closed to indicate the end of header metadata.
-	headerChanClosed uint32        // set when headerChan is closed. Used to avoid closing headerChan multiple times.
-	// headerValid indicates whether a valid header was received.  Only
-	// meaningful after headerChan is closed (always call waitOnHeader() before
-	// reading its value).  Not valid on server side.
+	headerChan       chan struct{}
+	headerChanClosed uint32
+
 	headerValid bool
 
-	// hdrMu protects header and trailer metadata on the server-side.
 	hdrMu sync.Mutex
-	// On client side, header keeps the received header metadata.
-	//
-	// On server side, header keeps the header set by SetHeader(). The complete
-	// header will merged into this after t.WriteHeader() is called.
+
 	header  metadata.MD
-	trailer metadata.MD // the key-value map of trailer metadata.
+	trailer metadata.MD
 
-	noHeaders bool // set if the client never received headers (set only after the stream is done).
+	noHeaders bool
 
-	// On the server-side, headerSent is atomically set to 1 when the headers are sent out.
 	headerSent uint32
 
 	state streamState
 
-	// On client-side it is the status error received from the server.
-	// On server-side it is unused.
 	status       *status.Status
 	reuseStatus  bool
 	bizStatusErr kerrors.BizStatusErrorIface
 
-	bytesReceived uint32 // indicates whether any bytes have been received on this stream
-	unprocessed   uint32 // set if the server sends a refused stream or GOAWAY including this stream
+	bytesReceived uint32
+	unprocessed   uint32
 
-	// contentSubtype is the content-subtype for requests.
-	// this must be lowercase or the behavior is undefined.
 	contentSubtype string
 
-	// closeStreamErr is used to store the error when stream is closed
 	closeStreamErr atomic.Value
-	// sourceService is the source service name of this stream
+
 	sourceService string
 
-	ri rpcinfo.RPCInfo // only for client-side stream, avoid invoke rpcinfo.GetRPCInfo frequently
+	ri rpcinfo.RPCInfo
 }
 
-// isHeaderSent is only valid on the server-side.
-func (s *Stream) isHeaderSent() bool {
-	return atomic.LoadUint32(&s.headerSent) == 1
-}
+func (s *Stream) isHeaderSent() bool { _ = "STUB: not implemented"; return false }
 
-// updateHeaderSent updates headerSent and returns true
-// if it was already set. It is valid only on server-side.
-func (s *Stream) updateHeaderSent() bool {
-	return atomic.SwapUint32(&s.headerSent, 1) == 1
-}
+func (s *Stream) updateHeaderSent() bool { _ = "STUB: not implemented"; return false }
 
 func (s *Stream) swapState(st streamState) streamState {
-	return streamState(atomic.SwapUint32((*uint32)(&s.state), uint32(st)))
+	_ = "STUB: not implemented"
+	return *new(streamState)
 }
 
 func (s *Stream) compareAndSwapState(oldState, newState streamState) bool {
-	return atomic.CompareAndSwapUint32((*uint32)(&s.state), uint32(oldState), uint32(newState))
-}
-
-func (s *Stream) getState() streamState {
-	return streamState(atomic.LoadUint32((*uint32)(&s.state)))
-}
-
-func (s *Stream) waitOnHeader() {
-	if s.headerChan == nil {
-		// On the server headerChan is always nil since a stream originates
-		// only after having received headers.
-		return
-	}
-	select {
-	case <-s.ctx.Done():
-		// Close the stream to prevent headers/trailers from changing after
-		// this function returns.
-		s.ct.CloseStream(s, cascadeContextErr(s.ctx.Err()))
-		// headerChan could possibly not be closed yet if closeStream raced
-		// with operateHeaders; wait until it is closed explicitly here.
-		<-s.headerChan
-	case <-s.headerChan:
-	}
-}
-
-// RecvCompress returns the compression algorithm applied to the inbound
-// message. It is empty string if there is no compression applied.
-func (s *Stream) RecvCompress() string {
-	s.waitOnHeader()
-	return s.recvCompress
-}
-
-// SendCompress returns the compression algorithm applied to the outbound
-// message. It is empty string if there is no compression applied.
-func (s *Stream) SendCompress() string {
-	s.waitOnHeader()
-	return s.sendCompress
-}
-
-// SetSendCompress sets the compression algorithm to the stream.
-func (s *Stream) SetSendCompress(str string) {
-	s.sendCompress = str
-}
-
-// Done returns a channel which is closed when it receives the final status
-// from the server.
-func (s *Stream) Done() <-chan struct{} {
-	return s.done
-}
-
-// Header returns the header metadata of the stream.
-//
-// On client side, it acquires the key-value pairs of header metadata once it is
-// available. It blocks until i) the metadata is ready or ii) there is no header
-// metadata or iii) the stream is canceled/expired.
-//
-// On server side, it returns the out header after t.WriteHeader is called.  It
-// does not block and must not be called until after WriteHeader.
-func (s *Stream) Header() (metadata.MD, error) {
-	if s.headerChan == nil {
-		// On server side, return the header in stream. It will be the out
-		// header after t.WriteHeader is called.
-		return s.header.Copy(), nil
-	}
-	s.waitOnHeader()
-	if !s.headerValid {
-		return nil, s.status.Err()
-	}
-	return s.header.Copy(), nil
-}
-
-// tryGetHeader attempts to get the header in a non-blocking way.
-// Returns (nil, false) if the header is not available.
-// Notice: only use on client side.
-func (s *Stream) tryGetHeader() (metadata.MD, bool) {
-	if s.headerChan == nil {
-		return nil, false
-	}
-	select {
-	case <-s.headerChan:
-		return s.header.Copy(), true
-	default:
-		return nil, false
-	}
-}
-
-// getHeaderValid returns whether a valid header has been received
-func (s *Stream) getHeaderValid() bool {
-	if atomic.LoadUint32(&s.headerChanClosed) == 1 {
-		// only read headerValid after headerChan is closed
-		if s.headerChan != nil {
-			select {
-			case <-s.headerChan:
-				return s.headerValid
-			default:
-				return false
-			}
-		}
-	}
+	_ = "STUB: not implemented"
 	return false
 }
 
-// TrailersOnly blocks until a header or trailers-only frame is received and
-// then returns true if the stream was trailers-only.  If the stream ends
-// before headers are received, returns true, nil.  Client-side only.
-func (s *Stream) TrailersOnly() bool {
-	s.waitOnHeader()
-	return s.noHeaders
+func (s *Stream) getState() streamState { _ = "STUB: not implemented"; return *new(streamState) }
+
+func (s *Stream) waitOnHeader() { _ = "STUB: not implemented"; return }
+
+func (s *Stream) RecvCompress() string { _ = "STUB: not implemented"; return "" }
+
+func (s *Stream) SendCompress() string { _ = "STUB: not implemented"; return "" }
+
+func (s *Stream) SetSendCompress(str string) { _ = "STUB: not implemented"; return }
+
+func (s *Stream) Done() <-chan struct{} { _ = "STUB: not implemented"; return nil }
+
+func (s *Stream) Header() (metadata.MD, error) {
+	_ = "STUB: not implemented"
+	return *new(metadata.MD), nil
 }
 
-// Trailer returns the cached trailer metadata. Note that if it is not called
-// after the entire stream is done, it could return an empty MD. Client
-// side only.
-// It can be safely read only after stream has ended that is either read
-// or write have returned io.EOF.
-func (s *Stream) Trailer() metadata.MD {
-	c := s.trailer.Copy()
-	return c
+func (s *Stream) tryGetHeader() (metadata.MD, bool) {
+	_ = "STUB: not implemented"
+	return *new(metadata.MD), false
 }
 
-// ContentSubtype returns the content-subtype for a request. For example, a
-// content-subtype of "proto" will result in a content-type of
-// "application/grpc+proto". This will always be lowercase.  See
-// https://github.com/grpc/grpc/blob/master/doc/PROTOCOL-HTTP2.md#requests for
-// more details.
-func (s *Stream) ContentSubtype() string {
-	return s.contentSubtype
-}
+func (s *Stream) getHeaderValid() bool { _ = "STUB: not implemented"; return false }
 
-// Context returns the context of the stream.
-func (s *Stream) Context() context.Context {
-	return s.ctx
-}
+func (s *Stream) TrailersOnly() bool { _ = "STUB: not implemented"; return false }
 
-// Method returns the method for the stream.
-func (s *Stream) Method() string {
-	return s.method
-}
+func (s *Stream) Trailer() metadata.MD { _ = "STUB: not implemented"; return *new(metadata.MD) }
 
-// Status returns the status received from the server.
-// Status can be read safely only after the stream has ended,
-// that is, after Done() is closed.
-func (s *Stream) Status() *status.Status {
-	// When the internal status is a shared pre-defined instance (reuseStatus == true),
-	// a deep copy is returned to prevent callers from mutating the shared object via AppendMessage().
-	if s.reuseStatus && s.status != nil {
-		return status.FromProto(s.status.Proto())
-	}
-	return s.status
-}
+func (s *Stream) ContentSubtype() string { _ = "STUB: not implemented"; return "" }
+
+func (s *Stream) Context() context.Context { _ = "STUB: not implemented"; return *new(context.Context) }
+
+func (s *Stream) Method() string { _ = "STUB: not implemented"; return "" }
+
+func (s *Stream) Status() *status.Status { _ = "STUB: not implemented"; return nil }
 
 func (s *Stream) SetBizStatusErr(bizStatusErr kerrors.BizStatusErrorIface) {
-	s.bizStatusErr = bizStatusErr
+	_ = "STUB: not implemented"
+	return
 }
 
 func (s *Stream) BizStatusErr() kerrors.BizStatusErrorIface {
-	return s.bizStatusErr
+	_ = "STUB: not implemented"
+	return *new(kerrors.BizStatusErrorIface)
 }
 
-// SetHeader sets the header metadata. This can be called multiple times.
-// Server side only.
-// This should not be called in parallel to other data writes.
-func (s *Stream) SetHeader(md metadata.MD) error {
-	if md.Len() == 0 {
-		return nil
-	}
-	if s.isHeaderSent() || s.getState() == streamDone {
-		return ErrIllegalHeaderWrite
-	}
-	s.hdrMu.Lock()
-	s.header = metadata.AppendMD(s.header, md)
-	s.hdrMu.Unlock()
-	return nil
-}
+func (s *Stream) SetHeader(md metadata.MD) error { _ = "STUB: not implemented"; return nil }
 
-// SendHeader sends the given header metadata. The given metadata is
-// combined with any metadata set by previous calls to SetHeader and
-// then written to the transport stream.
-func (s *Stream) SendHeader(md metadata.MD) error {
-	return s.st.WriteHeader(s, md)
-}
+func (s *Stream) SendHeader(md metadata.MD) error { _ = "STUB: not implemented"; return nil }
 
-// SetTrailer sets the trailer metadata which will be sent with the RPC status
-// by the server. This can be called multiple times. Server side only.
-// This should not be called parallel to other data writes.
-func (s *Stream) SetTrailer(md metadata.MD) error {
-	if md.Len() == 0 {
-		return nil
-	}
-	if s.getState() == streamDone {
-		return ErrIllegalHeaderWrite
-	}
-	s.hdrMu.Lock()
-	s.trailer = metadata.AppendMD(s.trailer, md)
-	s.hdrMu.Unlock()
-	return nil
-}
+func (s *Stream) SetTrailer(md metadata.MD) error { _ = "STUB: not implemented"; return nil }
 
-func (s *Stream) write(m recvMsg) {
-	s.buf.put(m)
-}
+func (s *Stream) write(m recvMsg) { _ = "STUB: not implemented"; return }
 
-// Read reads all p bytes from the wire for this stream.
-func (s *Stream) Read(p []byte) (n int, err error) {
-	// Don't request a read if there was an error earlier
-	if er := s.trReader.(*transportReader).er; er != nil {
-		return 0, er
-	}
-	s.requestRead(len(p))
-	return io.ReadFull(s.trReader, p)
-}
+func (s *Stream) Read(p []byte) (n int, err error) { _ = "STUB: not implemented"; return 0, nil }
 
-func (s *Stream) getCloseStreamErr() error {
-	rawErr := s.closeStreamErr.Load()
-	if rawErr != nil {
-		return rawErr.(error)
-	}
-	return errStatusStreamDone
-}
+func (s *Stream) getCloseStreamErr() error { _ = "STUB: not implemented"; return nil }
 
-// StreamWrite only used for unit test
-func StreamWrite(s *Stream, buffer *bytes.Buffer) {
-	s.write(recvMsg{buffer: buffer})
-}
+func StreamWrite(s *Stream, buffer *bytes.Buffer) { _ = "STUB: not implemented"; return }
 
-// CreateStream only used for unit test. Create an independent stream out of http2client / http2server
 func CreateStream(ctx context.Context, id uint32, requestRead func(i int), method string) *Stream {
-	recvBuffer := newRecvBuffer()
-	trReader := &transportReader{
-		reader: &recvBufferReader{
-			recv: recvBuffer,
-			freeBuffer: func(buffer *bytes.Buffer) {
-				buffer.Reset()
-			},
-		},
-		windowHandler: func(i int) {},
-	}
-
-	stream := &Stream{
-		id:          id,
-		ctx:         ctx,
-		method:      method,
-		buf:         recvBuffer,
-		trReader:    trReader,
-		wq:          newWriteQuota(defaultWriteQuota, nil),
-		requestRead: requestRead,
-		hdrMu:       sync.Mutex{},
-	}
-
-	ctx, cancel := context.WithCancel(ctx)
-	stream.ctx, stream.cancel = newContextWithCancelReason(ctx, cancel)
-	return stream
+	_ = "STUB: not implemented"
+	return nil
 }
 
-// transportReader reads all the data available for this Stream from the transport and
-// passes them into the decoder, which converts them into a gRPC message stream.
-// The error is io.EOF when the stream is done or another non-nil error if
-// the stream broke.
 type transportReader struct {
 	reader io.Reader
-	// The handler to control the window update procedure for both this
-	// particular stream and the associated transport.
+
 	windowHandler func(int)
 	er            error
 }
 
 func (t *transportReader) Read(p []byte) (n int, err error) {
-	n, err = t.reader.Read(p)
-	if err != nil {
-		t.er = err
-		return
-	}
-	t.windowHandler(n)
-	return
+	_ = "STUB: not implemented"
+	return 0, nil
 }
 
-// BytesReceived indicates whether any bytes have been received on this stream.
-func (s *Stream) BytesReceived() bool {
-	return atomic.LoadUint32(&s.bytesReceived) == 1
-}
+func (s *Stream) BytesReceived() bool { _ = "STUB: not implemented"; return false }
 
-// Unprocessed indicates whether the server did not process this stream --
-// i.e. it sent a refused stream or GOAWAY including this stream ID.
-func (s *Stream) Unprocessed() bool {
-	return atomic.LoadUint32(&s.unprocessed) == 1
-}
+func (s *Stream) Unprocessed() bool { _ = "STUB: not implemented"; return false }
 
-// state of transport
 type transportState int
 
 const (
@@ -608,7 +240,6 @@ const (
 	draining
 )
 
-// ServerConfig consists of all the configurations to establish a server transport.
 type ServerConfig struct {
 	MaxStreams                 uint32
 	KeepaliveParams            ServerKeepalive
@@ -618,84 +249,50 @@ type ServerConfig struct {
 	WriteBufferSize            uint32
 	ReadBufferSize             uint32
 	MaxHeaderListSize          *uint32
-	// ReuseWriteBufferConfig configures reusing write buffer for each connection.
+
 	ReuseWriteBufferConfig ReuseWriteBufferConfig
 }
 
-func DefaultServerConfig() *ServerConfig {
-	return &ServerConfig{
-		WriteBufferSize: defaultWriteBufferSize,
-		ReadBufferSize:  defaultReadBufferSize,
-	}
-}
+func DefaultServerConfig() *ServerConfig { _ = "STUB: not implemented"; return nil }
 
-// ConnectOptions covers all relevant options for communicating with the server.
 type ConnectOptions struct {
-	// KeepaliveParams stores the keepalive parameters.
 	KeepaliveParams ClientKeepalive
-	// InitialWindowSize sets the initial window size for a stream.
+
 	InitialWindowSize uint32
-	// InitialConnWindowSize sets the initial window size for a connection.
+
 	InitialConnWindowSize uint32
-	// WriteBufferSize sets the size of write buffer which in turn determines how much data can be batched before it's written on the wire.
+
 	WriteBufferSize uint32
-	// ReadBufferSize sets the size of read buffer, which in turn determines how much data can be read at most for one read syscall.
+
 	ReadBufferSize uint32
-	// MaxHeaderListSize sets the max (uncompressed) size of header list that is prepared to be received.
+
 	MaxHeaderListSize *uint32
-	// ShortConn indicates whether the connection will be reused from grpc conn pool
+
 	ShortConn bool
-	// TLSConfig
+
 	TLSConfig *tls.Config
-	// TraceController is responsible for report detailed streaming events
+
 	TraceController *rpcinfo.TraceController
-	// ReuseWriteBufferConfig configures reusing write buffer for each connection.
+
 	ReuseWriteBufferConfig ReuseWriteBufferConfig
 }
 
-// ClientConfig consists of all the helper configurations to establish a client transport.
 type ClientConfig struct {
 	RemoteService string
 	OnGoAway      func(ctx context.Context, trans ClientTransport, reason GoAwayReason)
 	OnClose       func(ctx context.Context, trans ClientTransport, err error)
 }
 
-// NewServerTransport creates a ServerTransport with conn or non-nil error
-// if it fails.
 func NewServerTransport(ctx context.Context, conn net.Conn, cfg *ServerConfig) (ServerTransport, error) {
-	return newHTTP2Server(ctx, conn, cfg)
+	_ = "STUB: not implemented"
+	return *new(ServerTransport), nil
 }
 
-// NewClientTransport establishes the transport with the required ConnectOptions
-// and returns it to the caller.
-//
-// Deprecated: please use NewClientTransportWithConfig.
-//
-// Note: the timing of the onClose and onGoAway callback has changed.
-// Historically onClose and onGoAway were invoked while http2Client.mu was held and
-// before the transport state was set to closing/draining.
-// They are now invoked after the state has been set to closing/draining
-// and after http2Client.mu has been released.
-//
-// Callers that rely on the old ordering (for example, to observe the transport in a "reachable" state from
-// inside onClose or onGoAway) must migrate to NewClientTransportWithConfig and update
-// their callbacks accordingly.
 func NewClientTransport(ctx context.Context, conn net.Conn, opts ConnectOptions,
 	remoteService string, onGoAway func(GoAwayReason), onClose func(),
 ) (ClientTransport, error) {
-	return newHTTP2Client(ctx, conn, opts, ClientConfig{
-		RemoteService: remoteService,
-		OnGoAway: func(ctx context.Context, trans ClientTransport, reason GoAwayReason) {
-			if onGoAway != nil {
-				onGoAway(reason)
-			}
-		},
-		OnClose: func(ctx context.Context, trans ClientTransport, err error) {
-			if onClose != nil {
-				onClose()
-			}
-		},
-	})
+	_ = "STUB: not implemented"
+	return *new(ClientTransport), nil
 }
 
 var (
@@ -703,232 +300,119 @@ var (
 	noopOnGoAway = func(ctx context.Context, trans ClientTransport, reason GoAwayReason) {}
 )
 
-// NewClientTransportWithConfig establishes the transport with the required ConnectOptions
-// and returns it to the caller.
 func NewClientTransportWithConfig(ctx context.Context, conn net.Conn, opts ConnectOptions,
 	cfg ClientConfig,
 ) (ClientTransport, error) {
-	// OnClose and OnGoAway should not be nil
-	if cfg.OnClose == nil {
-		cfg.OnClose = noopOnClose
-	}
-	if cfg.OnGoAway == nil {
-		cfg.OnGoAway = noopOnGoAway
-	}
-	return newHTTP2Client(ctx, conn, opts, cfg)
+	_ = "STUB: not implemented"
+	return *new(ClientTransport), nil
 }
 
-// Options provides additional hints and information for message
-// transmission.
 type Options struct {
-	// Last indicates whether this write is the last piece for
-	// this stream.
 	Last bool
 }
 
-// CallHdr carries the information of a particular RPC.
 type CallHdr struct {
-	// Host specifies the peer's host.
 	Host string
 
-	// Method specifies the operation to perform.
 	Method string
 
-	// SendCompress specifies the compression algorithm applied on
-	// outbound message.
 	SendCompress string
 
-	// ContentSubtype specifies the content-subtype for a request. For example, a
-	// content-subtype of "proto" will result in a content-type of
-	// "application/grpc+proto". The value of ContentSubtype must be all
-	// lowercase, otherwise the behavior is undefined. See
-	// https://github.com/grpc/grpc/blob/master/doc/PROTOCOL-HTTP2.md#requests
-	// for more details.
 	ContentSubtype string
 
-	PreviousAttempts int // value of grpc-previous-rpc-attempts header to set
+	PreviousAttempts int
 }
 
-// IsActive is the interface that exposing the underlying connection's active status.
 type IsActive interface {
 	IsActive() bool
 }
 
-// ClientTransport is the common interface for all gRPC client-side transport
-// implementations.
 type ClientTransport interface {
-	// Close tears down this transport. Once it returns, the transport
-	// should not be accessed any more. The caller must make sure this
-	// is called only once.
 	Close(err error) error
 
-	// GracefulClose starts to tear down the transport: the transport will stop
-	// accepting new RPCs and NewStream will return error. Once all streams are
-	// finished, the transport will close.
-	//
-	// It does not block.
 	GracefulClose()
 
-	// Write sends the data for the given stream. A nil stream indicates
-	// the write is to be performed on the transport as a whole.
 	Write(s *Stream, hdr, data []byte, opts *Options) error
 
-	// NewStream creates a Stream for an RPC.
 	NewStream(ctx context.Context, callHdr *CallHdr) (*Stream, error)
 
-	// CloseStream clears the footprint of a stream when the stream is
-	// not needed any more. The err indicates the error incurred when
-	// CloseStream is called. Must be called when a stream is finished
-	// unless the associated transport is closing.
 	CloseStream(stream *Stream, err error)
 
-	// Error returns a channel that is closed when some I/O error
-	// happens. Typically the caller should have a goroutine to monitor
-	// this in order to take action (e.g., close the current transport
-	// and create a new one) in error case. It should not return nil
-	// once the transport is initiated.
 	Error() <-chan struct{}
 
-	// GoAway returns a channel that is closed when ClientTransport
-	// receives the draining signal from the server (e.g., GOAWAY frame in
-	// HTTP/2).
 	GoAway() <-chan struct{}
 
-	// GetGoAwayReason returns the reason why GoAway frame was received.
 	GetGoAwayReason() GoAwayReason
 
-	// RemoteAddr returns the remote network address.
 	RemoteAddr() net.Addr
 	LocalAddr() net.Addr
 }
 
-// ServerTransport is the common interface for all gRPC server-side transport
-// implementations.
-//
-// Methods may be called concurrently from multiple goroutines, but
-// Write methods for a given Stream will be called serially.
 type ServerTransport interface {
-	// HandleStreams receives incoming streams using the given handler.
 	HandleStreams(func(*Stream), func(context.Context, string) context.Context)
 
-	// WriteHeader sends the header metadata for the given stream.
-	// WriteHeader may not be called on all streams.
 	WriteHeader(s *Stream, md metadata.MD) error
 
-	// Write sends the data for the given stream.
-	// Write may not be called on all streams.
 	Write(s *Stream, hdr, data []byte, opts *Options) error
 
-	// WriteStatus sends the status of a stream to the client.  WriteStatus is
-	// the final call made on a stream and always occurs.
 	WriteStatus(s *Stream, st *status.Status) error
 
-	// Close tears down the transport. Once it is called, the transport
-	// should not be accessed any more. All the pending streams and their
-	// handlers will be terminated asynchronously.
 	Close() error
 
-	// RemoteAddr returns the remote network address.
 	RemoteAddr() net.Addr
 	LocalAddr() net.Addr
 
-	// Drain notifies the client this ServerTransport stops accepting new RPCs.
 	Drain()
 }
 
-// connectionErrorf creates an ConnectionError with the specified error description.
 func connectionErrorf(temp bool, e error, format string, a ...interface{}) ConnectionError {
-	return ConnectionError{
-		Desc: fmt.Sprintf(format, a...),
-		temp: temp,
-		err:  e,
-	}
+	_ = "STUB: not implemented"
+	return *new(ConnectionError)
 }
 
-// connectionErrorfWithIgnorable creates an ConnectionError with the specified error description and isIgnorable == true
 func connectionErrorfWithIgnorable(temp bool, e error, format string, a ...interface{}) ConnectionError {
-	connErr := connectionErrorf(temp, e, format, a...)
-	connErr.isIgnorable = true
-	return connErr
+	_ = "STUB: not implemented"
+	return *new(ConnectionError)
 }
 
-// ConnectionError is an error that results in the termination of the
-// entire connection and the retry of all the active streams.
 type ConnectionError struct {
 	Desc string
 	temp bool
 	err  error
-	// isIgnorable indicates whether this error is triggered by Kitex initiative and could be ignored.
+
 	isIgnorable bool
 }
 
-func (e ConnectionError) Error() string {
-	return fmt.Sprintf("connection error: desc = %q", e.Desc)
-}
+func (e ConnectionError) Error() string { _ = "STUB: not implemented"; return "" }
 
-// Temporary indicates if this connection error is temporary or fatal.
-func (e ConnectionError) Temporary() bool {
-	return e.temp
-}
+func (e ConnectionError) Temporary() bool { _ = "STUB: not implemented"; return false }
 
-// Origin returns the original error of this connection error.
-func (e ConnectionError) Origin() error {
-	// Never return nil error here.
-	// If the original error is nil, return itself.
-	if e.err == nil {
-		return e
-	}
-	return e.err
-}
+func (e ConnectionError) Origin() error { _ = "STUB: not implemented"; return nil }
 
-// Code returns the error code of this connection error to solve the metrics problem(no error code).
-// It always returns codes.Unavailable to be aligned with official gRPC-go.
-func (e ConnectionError) Code() int32 {
-	return int32(codes.Unavailable)
-}
+func (e ConnectionError) Code() int32 { _ = "STUB: not implemented"; return 0 }
 
-func (e ConnectionError) ignorable() bool {
-	return e.isIgnorable
-}
+func (e ConnectionError) ignorable() bool { _ = "STUB: not implemented"; return false }
 
-// isIgnorable checks if the error is ignorable.
-func isIgnorable(rawErr error) bool {
-	if err, ok := rawErr.(ConnectionError); ok {
-		return err.ignorable()
-	}
-	return false
-}
+func isIgnorable(rawErr error) bool { _ = "STUB: not implemented"; return false }
 
 var (
-	// ErrConnClosing indicates that the transport is closing.
 	ErrConnClosing = connectionErrorfWithIgnorable(true, nil, "transport is closing")
 
-	// errStreamDone is returned from write at the client side to indicate application
-	// layer of an error.
 	errStreamDone       = errors.New("the stream is done")
 	errStatusStreamDone = status.Err(codes.Internal, errStreamDone.Error())
 
-	// errStreamDrain indicates that the stream is rejected because the
-	// connection is draining. This could be caused by goaway or balancer
-	// removing the address.
 	errStreamDrain = status.Err(codes.Unavailable, "the connection is draining")
 
-	// StatusGoAway indicates that the server sent a GOAWAY that included this
-	// stream's ID in unprocessed RPCs.
 	statusGoAway = status.New(codes.Unavailable, "the stream is rejected because server is draining the connection")
 )
 
-// GoAwayReason contains the reason for the GoAway frame received.
 type GoAwayReason uint8
 
 const (
-	// GoAwayInvalid indicates that no GoAway frame is received.
 	GoAwayInvalid GoAwayReason = 0
-	// GoAwayNoReason is the default value when GoAway frame is received.
+
 	GoAwayNoReason GoAwayReason = 1
-	// GoAwayTooManyPings indicates that a GoAway frame with
-	// ErrCodeEnhanceYourCalm was received and that the debug data said
-	// "too_many_pings".
+
 	GoAwayTooManyPings GoAwayReason = 2
 )
 
@@ -939,104 +423,28 @@ var (
 	errCanceled            = statusCanceled.Err()
 )
 
-// ContextErr converts the error from context package into a status error.
-func ContextErr(err error) error {
-	if scErr, ok := standardContextErr(err); ok {
-		return scErr
-	}
-	if stErr, ok := err.(*status.Error); ok {
-		return stErr
-	}
-	return defaultContextErr(err)
-}
+func ContextErr(err error) error { _ = "STUB: not implemented"; return nil }
 
-// cascadeContextErr converts a client-side stream context error.
-// A status error used as the context's cancellation reason is produced by contextWithCancelReason
-// when another server-side Stream driving this client-side Stream has terminated.
-func cascadeContextErr(err error) error {
-	if scErr, ok := standardContextErr(err); ok {
-		return scErr
-	}
-	if stErr, ok := err.(*status.Error); ok {
-		return stErr.WithCascadeCancel()
-	}
-	return defaultContextErr(err)
-}
+func cascadeContextErr(err error) error { _ = "STUB: not implemented"; return nil }
 
-func standardContextErr(err error) (error, bool) {
-	switch err {
-	case context.DeadlineExceeded:
-		return errDeadlineExceeded, true
-	case context.Canceled:
-		return errCanceled, true
-	}
-	return err, false
-}
+func standardContextErr(err error) (error, bool) { _ = "STUB: not implemented"; return nil, false }
 
-func defaultContextErr(err error) error {
-	return status.Errorf(codes.Internal, "Unexpected error from context packet: %v", err)
-}
+func defaultContextErr(err error) error { _ = "STUB: not implemented"; return nil }
 
-func tryMarkAsCascadeCancel(err error) error {
-	if stErr, ok := err.(*status.Error); ok {
-		return stErr.WithCascadeCancel()
-	}
-	return err
-}
+func tryMarkAsCascadeCancel(err error) error { _ = "STUB: not implemented"; return nil }
 
-// contextStatusAndErr converts err to (*status.Status, reused, error).
-// For context.Canceled / context.DeadlineExceeded, both the *status.Status and *status.Error
-// are pre-defined shared singletons (reused=true).
-// The caller must use reused flag to ensure Stream.Status() returns a copy instead of the shared instance,
-// preventing mutation via AppendMessage().
 func contextStatusAndErr(err error) (*status.Status, bool, error) {
-	switch err {
-	case context.DeadlineExceeded:
-		return statusDeadlineExceeded, true, errDeadlineExceeded
-	case context.Canceled:
-		return statusCanceled, true, errCanceled
-	}
-	stErr, ok := err.(*status.Error)
-	if ok {
-		return stErr.GRPCStatus(), false, stErr
-	}
-	st := status.Newf(codes.Internal, "Unexpected error from context packet: %v", err)
-	return st, false, st.Err()
+	_ = "STUB: not implemented"
+	return nil, false, nil
 }
 
-// IsStreamDoneErr returns true if the error indicates that the stream is done.
-func IsStreamDoneErr(err error) bool {
-	return errors.Is(err, errStreamDone)
-}
+func IsStreamDoneErr(err error) bool { _ = "STUB: not implemented"; return false }
 
-// TLSConfig checks and supplement the tls config provided by user.
-func TLSConfig(tlsConfig *tls.Config) *tls.Config {
-	cfg := tlsConfig.Clone()
-	// When multiple application protocols are supported on a single server-side port number,
-	// the client and the server need to negotiate an application protocol for use with each connection.
-	// For gRPC, "h2" should be appended to "application_layer_protocol_negotiation" field.
-	cfg.NextProtos = tlsAppendH2ToALPNProtocols(cfg.NextProtos)
-
-	// Implementations of HTTP/2 MUST use TLS version 1.2 [TLS12] or higher for HTTP/2 over TLS.
-	// https://datatracker.ietf.org/doc/html/rfc7540#section-9.2
-	if cfg.MinVersion == 0 && (cfg.MaxVersion == 0 || cfg.MaxVersion >= tls.VersionTLS12) {
-		cfg.MinVersion = tls.VersionTLS12
-	}
-	return cfg
-}
+func TLSConfig(tlsConfig *tls.Config) *tls.Config { _ = "STUB: not implemented"; return nil }
 
 const alpnProtoStrH2 = "h2"
 
-func tlsAppendH2ToALPNProtocols(ps []string) []string {
-	for _, p := range ps {
-		if p == alpnProtoStrH2 {
-			return ps
-		}
-	}
-	ret := make([]string, 0, len(ps)+1)
-	ret = append(ret, ps...)
-	return append(ret, alpnProtoStrH2)
-}
+func tlsAppendH2ToALPNProtocols(ps []string) []string { _ = "STUB: not implemented"; return nil }
 
 var (
 	sendRSTStreamFrameSuffix       = " [send RSTStream Frame]"
